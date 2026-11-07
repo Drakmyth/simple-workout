@@ -37,9 +37,19 @@ Build and run the application:
 docker compose up --build
 ```
 
-The container listens on port 8080 within its Docker network. Production access is expected to use an HTTPS reverse proxy such as Traefik; publish the port locally only when direct access is required.
+By default, the app is available at <http://localhost:8080>. Copy `.env.example` to `.env` to change the bind address or port. Set `HTTP_BIND_ADDRESS=0.0.0.0` to allow direct access from other LAN devices; the app does not yet provide authentication.
 
 Runtime data is stored in the `workout-data` volume.
+
+### Traefik
+
+Set `APP_HOST` and, if necessary, `TRAEFIK_NETWORK` and `TRAEFIK_ENTRYPOINT` in `.env`. The named Traefik network must already exist. Start the app with the Traefik overlay:
+
+```sh
+docker compose -f compose.yaml -f compose.traefik.yaml up --build -d
+```
+
+Traefik routes HTTPS traffic to the app's internal port 8080. The direct localhost port remains available for diagnostics. Certificate resolver configuration remains owned by the existing Traefik deployment.
 
 ## License
 
