@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#b4232c">
   <title>Exercises - Simple Workout</title>
   <link rel="stylesheet" href="/static/app.css">
+  <script src="/static/app.js" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -18,7 +19,7 @@
         <p class="eyebrow">Movement library</p>
         <h1>Exercises</h1>
       </div>
-      <form class="preference" method="post" action="/exercises/image-variant">
+      <form class="preference" method="post" action="/exercises/image-variant" data-auto-submit>
         <input type="hidden" name="return_to" value="/exercises">
         <label for="image-preference">Image model</label>
         <div class="form-row">
@@ -26,7 +27,7 @@
             <option value="male" {{if eq .Variant "male"}}selected{{end}}>Male</option>
             <option value="female" {{if eq .Variant "female"}}selected{{end}}>Female</option>
           </select>
-          <button type="submit">Apply</button>
+          <button type="submit" data-submit>Apply</button>
         </div>
       </form>
     </div>
