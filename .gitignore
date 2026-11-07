@@ -1,0 +1,23 @@
+# Binaries and build output
+/bin/
+/dist/
+*.exe
+*.test
+*.out
+
+# Runtime data
+/data/
+*.db
+*.db-shm
+*.db-wal
+
+# Local configuration
+.env
+.env.*
+!.env.example
+
+# Editor and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
