@@ -12,10 +12,9 @@ type workoutsPage struct {
 
 type workoutExerciseView struct {
 	WorkoutExercise
-	Position int
-	Weight   string
-	CanUp    bool
-	CanDown  bool
+	Weight  string
+	CanUp   bool
+	CanDown bool
 }
 
 type workoutEditPage struct {
@@ -66,7 +65,6 @@ func (a *App) workoutEdit(w http.ResponseWriter, r *http.Request) {
 		}
 		items[position] = workoutExerciseView{
 			WorkoutExercise: exercise,
-			Position:        position,
 			Weight:          weight,
 			CanUp:           position > 0,
 			CanDown:         position < len(workout.Exercises)-1,

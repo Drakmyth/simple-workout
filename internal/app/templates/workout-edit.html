@@ -14,18 +14,18 @@
     </form>
     <h1>Exercises</h1>
     <div class="workout-items">
-      {{range .Items}}<article class="workout-item">
+      {{range $position, $item := .Items}}<article class="workout-item">
         <h2>{{.Name}}</h2>
-        <form class="target-form" method="post" action="/workouts/{{$.Workout.ID}}/exercises/{{.Position}}/update">
+        <form class="target-form" method="post" action="/workouts/{{$.Workout.ID}}/exercises/{{$position}}/update">
           <label>Sets<input name="sets" type="number" min="1" value="{{.Sets}}" required></label>
           <label>Reps<input name="reps" type="number" min="1" value="{{.Reps}}" required></label>
           <label>Weight ({{$.Unit}})<input name="weight" type="number" min="0" step="any" value="{{.Weight}}" placeholder="Bodyweight"></label>
           <button type="submit">Save</button>
         </form>
         <div class="item-actions">
-          {{if .CanUp}}<form method="post" action="/workouts/{{$.Workout.ID}}/exercises/{{.Position}}/move"><input type="hidden" name="direction" value="up"><button class="secondary" type="submit">Move up</button></form>{{end}}
-          {{if .CanDown}}<form method="post" action="/workouts/{{$.Workout.ID}}/exercises/{{.Position}}/move"><input type="hidden" name="direction" value="down"><button class="secondary" type="submit">Move down</button></form>{{end}}
-          <form method="post" action="/workouts/{{$.Workout.ID}}/exercises/{{.Position}}/remove"><button class="danger" type="submit">Remove</button></form>
+          {{if .CanUp}}<form method="post" action="/workouts/{{$.Workout.ID}}/exercises/{{$position}}/move"><input type="hidden" name="direction" value="up"><button class="secondary" type="submit">Move up</button></form>{{end}}
+          {{if .CanDown}}<form method="post" action="/workouts/{{$.Workout.ID}}/exercises/{{$position}}/move"><input type="hidden" name="direction" value="down"><button class="secondary" type="submit">Move down</button></form>{{end}}
+          <form method="post" action="/workouts/{{$.Workout.ID}}/exercises/{{$position}}/remove"><button class="danger" type="submit">Remove</button></form>
         </div>
       </article>{{end}}
     </div>
