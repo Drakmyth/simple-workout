@@ -6,11 +6,16 @@ import (
 	"strings"
 )
 
-type Workout struct {
+type WorkoutSummary struct {
 	ID            int64
 	Name          string
 	ExerciseCount int
-	Exercises     []WorkoutExercise
+}
+
+type Workout struct {
+	ID        int64
+	Name      string
+	Exercises []WorkoutExercise
 }
 
 type WorkoutExercise struct {
@@ -22,7 +27,7 @@ type WorkoutExercise struct {
 	Weight   *float64
 }
 
-func (a *App) workouts() ([]Workout, error) {
+func (a *App) workouts() ([]WorkoutSummary, error) {
 	rows, err := a.db.Query(`SELECT w.id, w.name, COUNT(we.exercise_id)
 		FROM workouts w LEFT JOIN workout_exercises we ON we.workout_id = w.id
 		GROUP BY w.id ORDER BY w.id`)
@@ -30,9 +35,9 @@ func (a *App) workouts() ([]Workout, error) {
 		return nil, fmt.Errorf("query workouts: %w", err)
 	}
 	defer rows.Close()
-	var workouts []Workout
+	var workouts []WorkoutSummary
 	for rows.Next() {
-		var workout Workout
+		var workout WorkoutSummary
 		if err := rows.Scan(&workout.ID, &workout.Name, &workout.ExerciseCount); err != nil {
 			return nil, fmt.Errorf("scan workout: %w", err)
 		}
