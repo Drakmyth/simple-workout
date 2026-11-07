@@ -1,0 +1,17 @@
+{{define "workouts.html"}}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#b4232c"><title>Workouts - Simple Workout</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="site-header"><a class="brand" href="/">Simple Workout</a><nav><a aria-current="page" href="/workouts">Workouts</a><a href="/exercises">Exercises</a></nav></header>
+  <main>
+    <div class="page-heading"><div><p class="eyebrow">Training plans</p><h1>Workouts</h1></div></div>
+    <div class="workout-grid">
+      {{range .Workouts}}<a class="workout-card" href="/workouts/{{.ID}}/edit"><h2>{{.Name}}</h2><p>{{.ExerciseCount}} exercises</p><span>Edit workout</span></a>{{end}}
+    </div>
+  </main>
+</body>
+</html>{{end}}

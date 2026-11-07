@@ -26,6 +26,14 @@ type WorkoutExercise struct {
 	Weight *float64
 }
 
+func (a *App) weightUnit() (string, error) {
+	var unit string
+	if err := a.db.QueryRow("SELECT weight_unit FROM settings WHERE id = 1").Scan(&unit); err != nil {
+		return "", fmt.Errorf("query weight unit: %w", err)
+	}
+	return unit, nil
+}
+
 func (a *App) workouts() ([]WorkoutSummary, error) {
 	rows, err := a.db.Query(`SELECT w.id, w.name, COUNT(we.exercise_id)
 		FROM workouts w LEFT JOIN workout_exercises we ON we.workout_id = w.id

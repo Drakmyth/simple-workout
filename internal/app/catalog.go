@@ -16,6 +16,7 @@ const (
 )
 
 type Exercise struct {
+	ID     int64
 	Slug   string
 	Name   string
 	Notes  string
@@ -29,7 +30,7 @@ type ExerciseImage struct {
 }
 
 func (a *App) exercises() ([]Exercise, error) {
-	rows, err := a.db.Query(`SELECT e.slug, e.name, e.notes, i.variant, i.path, i.alt_text
+	rows, err := a.db.Query(`SELECT e.id, e.slug, e.name, e.notes, i.variant, i.path, i.alt_text
 		FROM exercises e JOIN exercise_images i ON i.exercise_id = e.id
 		ORDER BY e.name, i.variant`)
 	if err != nil {
@@ -40,13 +41,14 @@ func (a *App) exercises() ([]Exercise, error) {
 	var exercises []Exercise
 	var current *Exercise
 	for rows.Next() {
+		var id int64
 		var slug, name, notes, variant string
 		var image ExerciseImage
-		if err := rows.Scan(&slug, &name, &notes, &variant, &image.Path, &image.AltText); err != nil {
+		if err := rows.Scan(&id, &slug, &name, &notes, &variant, &image.Path, &image.AltText); err != nil {
 			return nil, fmt.Errorf("scan exercise: %w", err)
 		}
 		if current == nil || current.Slug != slug {
-			exercises = append(exercises, Exercise{Slug: slug, Name: name, Notes: notes, Images: make(map[string]ExerciseImage, 2)})
+			exercises = append(exercises, Exercise{ID: id, Slug: slug, Name: name, Notes: notes, Images: make(map[string]ExerciseImage, 2)})
 			current = &exercises[len(exercises)-1]
 		}
 		current.Images[variant] = image
@@ -62,6 +64,7 @@ func (a *App) exercise(slug string) (Exercise, error) {
 	var id int64
 	err := a.db.QueryRow("SELECT id, slug, name, notes FROM exercises WHERE slug = ?", slug).
 		Scan(&id, &exercise.Slug, &exercise.Name, &exercise.Notes)
+	exercise.ID = id
 	if err != nil {
 		return Exercise{}, fmt.Errorf("query exercise: %w", err)
 	}

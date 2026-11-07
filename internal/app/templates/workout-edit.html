@@ -1,0 +1,37 @@
+{{define "workout-edit.html"}}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#b4232c"><title>Edit {{.Workout.Name}} - Simple Workout</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="site-header"><a class="brand" href="/">Simple Workout</a><nav><a aria-current="page" href="/workouts">Workouts</a><a href="/exercises">Exercises</a></nav></header>
+  <main class="workout-edit">
+    <a class="back-link" href="/workouts">Back to workouts</a>
+    <form class="rename-form" method="post" action="/workouts/{{.Workout.ID}}/rename">
+      <label for="workout-name">Workout name</label><div class="form-row"><input id="workout-name" name="name" value="{{.Workout.Name}}" required><button type="submit">Rename</button></div>
+    </form>
+    <h1>Exercises</h1>
+    <div class="workout-items">
+      {{range .Items}}<article class="workout-item">
+        <h2>{{.Name}}</h2>
+        <form class="target-form" method="post" action="/workouts/{{$.Workout.ID}}/exercises/{{.Position}}/update">
+          <label>Sets<input name="sets" type="number" min="1" value="{{.Sets}}" required></label>
+          <label>Reps<input name="reps" type="number" min="1" value="{{.Reps}}" required></label>
+          <label>Weight ({{$.Unit}})<input name="weight" type="number" min="0" step="any" value="{{.Weight}}" placeholder="Bodyweight"></label>
+          <button type="submit">Save</button>
+        </form>
+        <div class="item-actions">
+          {{if .CanUp}}<form method="post" action="/workouts/{{$.Workout.ID}}/exercises/{{.Position}}/move"><input type="hidden" name="direction" value="up"><button class="secondary" type="submit">Move up</button></form>{{end}}
+          {{if .CanDown}}<form method="post" action="/workouts/{{$.Workout.ID}}/exercises/{{.Position}}/move"><input type="hidden" name="direction" value="down"><button class="secondary" type="submit">Move down</button></form>{{end}}
+          <form method="post" action="/workouts/{{$.Workout.ID}}/exercises/{{.Position}}/remove"><button class="danger" type="submit">Remove</button></form>
+        </div>
+      </article>{{end}}
+    </div>
+    <form class="add-exercise" method="post" action="/workouts/{{.Workout.ID}}/exercises">
+      <label for="exercise-id">Add exercise</label><div class="form-row"><select id="exercise-id" name="exercise_id">{{range .Exercises}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select><button type="submit">Add</button></div>
+    </form>
+  </main>
+</body>
+</html>{{end}}
