@@ -26,8 +26,10 @@ type Config struct {
 }
 
 type App struct {
-	db      *sql.DB
-	handler http.Handler
+	db        *sql.DB
+	handler   http.Handler
+	templates *template.Template
+	logger    *slog.Logger
 }
 
 func New(ctx context.Context, config Config) (*App, error) {
@@ -60,9 +62,13 @@ func New(ctx context.Context, config Config) (*App, error) {
 		return nil, fmt.Errorf("open static files: %w", err)
 	}
 
+	application := &App{db: db, templates: templates, logger: config.Logger}
 	mux := http.NewServeMux()
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static)))
 	mux.HandleFunc("GET /health", health)
+	mux.HandleFunc("GET /exercises", application.exerciseList)
+	mux.HandleFunc("GET /exercises/{slug}", application.exerciseDetail)
+	mux.HandleFunc("POST /settings/image-preference", application.updateImagePreference)
 	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
@@ -74,7 +80,8 @@ func New(ctx context.Context, config Config) (*App, error) {
 		}
 	})
 
-	return &App{db: db, handler: securityHeaders(mux)}, nil
+	application.handler = securityHeaders(mux)
+	return application, nil
 }
 
 func (a *App) Handler() http.Handler {

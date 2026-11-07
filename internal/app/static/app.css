@@ -11,6 +11,9 @@
 body { margin: 0; }
 
 .site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 1rem max(1rem, calc((100% - 64rem) / 2));
   background: #fff;
   border-bottom: 1px solid #dfe1e3;
@@ -21,6 +24,14 @@ body { margin: 0; }
   font-weight: 750;
   text-decoration: none;
 }
+
+nav a, .back-link {
+  color: #4b4f54;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+nav a:hover, .back-link:hover { color: #8f1d25; }
 
 main {
   width: min(100% - 2rem, 64rem);
@@ -59,4 +70,135 @@ h1 + p {
   color: #5c6065;
   font-size: 1.1rem;
   line-height: 1.6;
+}
+
+.primary-action, button {
+  display: inline-block;
+  padding: 0.7rem 1rem;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  background: #a3212a;
+  border: 1px solid #a3212a;
+  border-radius: 0.45rem;
+  cursor: pointer;
+}
+
+.primary-action { margin-top: 1.25rem; }
+
+.page-heading, .detail-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.preference {
+  padding: 0.85rem;
+  background: #fff;
+  border: 1px solid #dfe1e3;
+  border-radius: 0.6rem;
+}
+
+.preference label {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: #4b4f54;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.form-row { display: flex; gap: 0.5rem; }
+
+select {
+  min-width: 0;
+  flex: 1;
+  padding: 0.65rem;
+  color: inherit;
+  font: inherit;
+  background: #fff;
+  border: 1px solid #bfc3c7;
+  border-radius: 0.45rem;
+}
+
+.exercise-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.exercise-card {
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid #dfe1e3;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.2rem 0.75rem rgb(37 39 42 / 5%);
+}
+
+.exercise-card:hover { border-color: #c9a0a3; }
+
+.exercise-card img, .detail-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #f7f7f8;
+}
+
+.exercise-card div { padding: 1rem; }
+
+.exercise-card h2, .detail-content h2 {
+  margin: 0;
+  color: #202225;
+  font-size: 1.2rem;
+}
+
+.exercise-card p, .note p {
+  margin: 0.5rem 0 0;
+  color: #62666b;
+  line-height: 1.5;
+}
+
+.detail-page { max-width: 58rem; }
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 1.25rem;
+}
+
+.detail-image {
+  border: 1px solid #dfe1e3;
+  border-radius: 0.75rem;
+}
+
+.detail-content {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.detail-content .card { padding: 1.25rem; }
+
+.instructions ol {
+  margin: 1rem 0 0;
+  padding-left: 1.4rem;
+}
+
+.instructions li {
+  margin-top: 0.65rem;
+  padding-left: 0.25rem;
+  line-height: 1.55;
+}
+
+@media (min-width: 42rem) {
+  .page-heading, .detail-heading {
+    flex-direction: row;
+    align-items: end;
+    justify-content: space-between;
+  }
+
+  .preference { min-width: 18rem; }
+  .exercise-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .detail-content { grid-template-columns: minmax(0, 2fr) minmax(14rem, 1fr); }
 }

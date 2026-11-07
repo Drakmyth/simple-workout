@@ -1,0 +1,51 @@
+{{define "exercise.html"}}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#b4232c">
+  <title>{{.Exercise.Name}} - Simple Workout</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/">Simple Workout</a>
+    <nav><a aria-current="page" href="/exercises">Exercises</a></nav>
+  </header>
+  <main class="detail-page">
+    <a class="back-link" href="/exercises">Back to exercises</a>
+    <div class="detail-heading">
+      <div>
+        <p class="eyebrow">Exercise guide</p>
+        <h1>{{.Exercise.Name}}</h1>
+      </div>
+      <form class="preference" method="post" action="/settings/image-preference">
+        <input type="hidden" name="return_to" value="/exercises/{{.Exercise.Slug}}">
+        <label for="image-preference">Image model</label>
+        <div class="form-row">
+          <select id="image-preference" name="image_preference">
+            <option value="male" {{if eq .Preference "male"}}selected{{end}}>Male</option>
+            <option value="female" {{if eq .Preference "female"}}selected{{end}}>Female</option>
+            <option value="random" {{if eq .Preference "random"}}selected{{end}}>Random</option>
+            <option value="alternating" {{if eq .Preference "alternating"}}selected{{end}}>Alternating</option>
+          </select>
+          <button type="submit">Apply</button>
+        </div>
+      </form>
+    </div>
+    <img class="detail-image" src="{{.Exercise.Image.Path}}" alt="{{.Exercise.Image.AltText}}" width="1536" height="1024">
+    <div class="detail-content">
+      <section class="card instructions">
+        <h2>How to perform it</h2>
+        <ol>
+          {{range .Exercise.Steps}}<li>{{.}}</li>{{end}}
+        </ol>
+      </section>
+      <aside class="card note">
+        <h2>Keep in mind</h2>
+        <p>{{.Exercise.Notes}}</p>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>{{end}}
