@@ -11,6 +11,9 @@
 *.db-shm
 *.db-wal
 
+# Generated image review workspace
+/reference/
+
 # Local configuration
 .env
 .env.*

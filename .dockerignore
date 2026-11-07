@@ -1,9 +1,14 @@
 .git
 .github
+.agents
 .env*
+/assets
 /data
 /bin
 /dist
+/reference
+/scripts
+/tools
 *.db
 *.db-shm
 *.db-wal

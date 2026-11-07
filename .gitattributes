@@ -11,3 +11,6 @@
 *.jpeg binary
 *.webp binary
 *.ico binary
+
+assets/exercise-images/manifest.json linguist-generated=true
+internal/app/static/images/exercises/*.webp linguist-generated=true
