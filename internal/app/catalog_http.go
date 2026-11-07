@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const alternatingCookie = "exercise_image_next"
+const guideVariantCookie = "exercise_guide_variant"
 
 type exerciseView struct {
 	Exercise
@@ -15,13 +15,13 @@ type exerciseView struct {
 }
 
 type catalogPage struct {
-	Exercises  []exerciseView
-	Preference string
+	Exercises []exerciseView
+	Variant   string
 }
 
 type exercisePage struct {
-	Exercise   exerciseView
-	Preference string
+	Exercise exerciseView
+	Variant  string
 }
 
 func (a *App) exerciseList(w http.ResponseWriter, r *http.Request) {
@@ -30,27 +30,12 @@ func (a *App) exerciseList(w http.ResponseWriter, r *http.Request) {
 		a.serverError(w, "load exercise catalog", err)
 		return
 	}
-	preference, err := a.imagePreference()
-	if err != nil {
-		a.serverError(w, "load image preference", err)
-		return
-	}
-
-	next := alternatingNext(r)
+	variant := guideVariant(r)
 	views := make([]exerciseView, 0, len(exercises))
 	for _, exercise := range exercises {
-		variant, updatedNext, err := selectImageVariant(preference, next)
-		if err != nil {
-			a.serverError(w, "select exercise image", err)
-			return
-		}
-		next = updatedNext
 		views = append(views, exerciseView{Exercise: exercise, Image: exercise.Images[variant]})
 	}
-	if preference == imageAlternating {
-		setAlternatingNext(w, next)
-	}
-	a.render(w, "exercises.html", catalogPage{Exercises: views, Preference: preference})
+	a.render(w, "exercises.html", catalogPage{Exercises: views, Variant: variant})
 }
 
 func (a *App) exerciseDetail(w http.ResponseWriter, r *http.Request) {
@@ -63,34 +48,27 @@ func (a *App) exerciseDetail(w http.ResponseWriter, r *http.Request) {
 		a.serverError(w, "load exercise", err)
 		return
 	}
-	preference, err := a.imagePreference()
-	if err != nil {
-		a.serverError(w, "load image preference", err)
-		return
-	}
-	variant, next, err := selectImageVariant(preference, alternatingNext(r))
-	if err != nil {
-		a.serverError(w, "select exercise image", err)
-		return
-	}
-	if preference == imageAlternating {
-		setAlternatingNext(w, next)
-	}
+	variant := guideVariant(r)
 	a.render(w, "exercise.html", exercisePage{
-		Exercise:   exerciseView{Exercise: exercise, Image: exercise.Images[variant]},
-		Preference: preference,
+		Exercise: exerciseView{Exercise: exercise, Image: exercise.Images[variant]},
+		Variant:  variant,
 	})
 }
 
-func (a *App) updateImagePreference(w http.ResponseWriter, r *http.Request) {
-	preference := r.FormValue("image_preference")
-	if err := a.setImagePreference(preference); err != nil {
-		http.Error(w, "Invalid image preference", http.StatusBadRequest)
+func (a *App) updateGuideVariant(w http.ResponseWriter, r *http.Request) {
+	variant := r.FormValue("image_variant")
+	if variant != imageMale && variant != imageFemale {
+		http.Error(w, "Invalid image variant", http.StatusBadRequest)
 		return
 	}
-	if preference == imageAlternating {
-		http.SetCookie(w, &http.Cookie{Name: alternatingCookie, Path: "/", MaxAge: -1, HttpOnly: true, SameSite: http.SameSiteLaxMode})
-	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     guideVariantCookie,
+		Value:    variant,
+		Path:     "/",
+		MaxAge:   int((365 * 24 * time.Hour).Seconds()),
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
 	returnTo := r.FormValue("return_to")
 	if !strings.HasPrefix(returnTo, "/") || strings.HasPrefix(returnTo, "//") {
 		returnTo = "/exercises"
@@ -98,23 +76,12 @@ func (a *App) updateImagePreference(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, returnTo, http.StatusSeeOther)
 }
 
-func alternatingNext(r *http.Request) string {
-	cookie, err := r.Cookie(alternatingCookie)
-	if err != nil {
-		return ""
+func guideVariant(r *http.Request) string {
+	cookie, err := r.Cookie(guideVariantCookie)
+	if err == nil && cookie.Value == imageFemale {
+		return imageFemale
 	}
-	return cookie.Value
-}
-
-func setAlternatingNext(w http.ResponseWriter, next string) {
-	http.SetCookie(w, &http.Cookie{
-		Name:     alternatingCookie,
-		Value:    next,
-		Path:     "/",
-		MaxAge:   int((365 * 24 * time.Hour).Seconds()),
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-	})
+	return imageMale
 }
 
 func (a *App) render(w http.ResponseWriter, name string, data any) {

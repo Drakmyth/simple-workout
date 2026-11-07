@@ -19,15 +19,13 @@
         <p class="eyebrow">Exercise guide</p>
         <h1>{{.Exercise.Name}}</h1>
       </div>
-      <form class="preference" method="post" action="/settings/image-preference">
+      <form class="preference" method="post" action="/exercises/image-variant">
         <input type="hidden" name="return_to" value="/exercises/{{.Exercise.Slug}}">
         <label for="image-preference">Image model</label>
         <div class="form-row">
-          <select id="image-preference" name="image_preference">
-            <option value="male" {{if eq .Preference "male"}}selected{{end}}>Male</option>
-            <option value="female" {{if eq .Preference "female"}}selected{{end}}>Female</option>
-            <option value="alternating" {{if eq .Preference "alternating"}}selected{{end}}>Alternating</option>
-            <option value="random" {{if eq .Preference "random"}}selected{{end}}>Random</option>
+          <select id="image-preference" name="image_variant">
+            <option value="male" {{if eq .Variant "male"}}selected{{end}}>Male</option>
+            <option value="female" {{if eq .Variant "female"}}selected{{end}}>Female</option>
           </select>
           <button type="submit">Apply</button>
         </div>
