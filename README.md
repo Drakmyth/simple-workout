@@ -37,9 +37,15 @@ Build and run the application:
 docker compose up --build
 ```
 
-The container listens on port 8080 within its Docker network. Production access is expected to use an HTTPS reverse proxy such as Traefik; publish the port locally only when direct access is required.
+By default, the app is available at <http://localhost:8080>. Copy `.env.example` to `.env` to change the bind address or port. Set `HTTP_BIND_ADDRESS=0.0.0.0` to allow direct access from other LAN devices; the app does not yet provide authentication.
 
 Runtime data is stored in the `workout-data` volume.
+
+### Reverse proxies
+
+The application serves plain HTTP on container port 8080 and does not manage TLS. A reverse proxy can reach it through the published host port or by sharing its Docker network. Configure the proxy to forward requests without changing their path and to provide HTTPS externally.
+
+When the proxy shares the Docker network, it should route to service `app` on port 8080. The published host port can remain bound to `127.0.0.1` for local diagnostics.
 
 ## License
 
