@@ -62,7 +62,7 @@ func TestMigrationsAreRecordedAndIdempotent(t *testing.T) {
 	application := newTestApp(t)
 	assertMigrationCount(t, application, 3)
 
-	if err := applyMigrations(context.Background(), application.store.db); err != nil {
+	if err := application.store.applyMigrations(context.Background()); err != nil {
 		t.Fatalf("applyMigrations() error = %v", err)
 	}
 	assertMigrationCount(t, application, 3)
