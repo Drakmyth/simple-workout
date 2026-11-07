@@ -1,0 +1,47 @@
+{
+  "biceps-curl": {
+    "start": "Stand tall with palms forward, arms lowered, wrists neutral, and elbows close to the torso.",
+    "finish": "Curl both dumbbells toward the shoulders with palms up and the torso still.",
+    "avoid": ["swinging", "leaning backward", "shrugging", "bent wrists", "elbows drifting forward"]
+  },
+  "dead-bug": {
+    "start": "Lie with head and shoulders relaxed on the floor, arms vertical, and hips and knees at 90 degrees.",
+    "finish": "Extend the right arm and left leg while the opposite limbs remain in tabletop and the torso stays still.",
+    "avoid": ["lifting the head", "curling into a crunch", "arching the lower back", "rib flare"]
+  },
+  "dumbbell-floor-press": {
+    "start": "Lie on the floor with feet planted, upper arms resting lightly down, elbows at 90 degrees, and forearms vertical.",
+    "finish": "Press both dumbbells over the chest with straight arms, neutral wrists, and relaxed shoulders.",
+    "avoid": ["using a bench", "shrugging", "flared elbows", "touching the dumbbells together"]
+  },
+  "dumbbell-romanian-deadlift": {
+    "start": "Stand with dumbbells at the thighs, feet hip-width apart, shoulders controlled, and spine neutral.",
+    "finish": "Push the hips backward with a slight knee bend while keeping dumbbells close to the legs and the neck neutral.",
+    "avoid": ["squatting", "rounding the back", "lifting the chin", "moving dumbbells away from the legs"]
+  },
+  "goblet-squat": {
+    "start": "Stand shoulder-width with toes slightly outward and one dumbbell held vertically at the chest in a secure goblet grip.",
+    "finish": "Squat to a comfortable depth with heels planted, knees tracking with toes, and chest upright.",
+    "avoid": ["heels lifting", "knees collapsing inward", "rounded back", "insecure grip"]
+  },
+  "incline-push-up": {
+    "start": "Place both hands on a stable waist-high bench and form a straight line from head through heels.",
+    "finish": "Lower the chest toward the bench with elbows 30 to 45 degrees from the torso while maintaining the body line.",
+    "avoid": ["sagging hips", "raised hips", "rounded shoulders", "lifted chin", "knees on the floor"]
+  },
+  "one-arm-dumbbell-row": {
+    "start": "Use a staggered stance and one hand on a flat bench, with the working arm vertical and spine neutral.",
+    "finish": "Drive the working elbow toward the lower ribs or hip while keeping shoulders level and hips square.",
+    "avoid": ["torso rotation", "shrugging", "rounded back", "bent wrist"]
+  },
+  "standing-calf-raise": {
+    "start": "Stand on a flat floor with feet hip-width, heels planted, legs straight, and one hand lightly supported.",
+    "finish": "Raise both heels through the balls of the feet while keeping ankles aligned and torso vertical.",
+    "avoid": ["bent knees", "leaning", "bouncing", "ankles rolling", "using a step"]
+  },
+  "standing-hammer-curl": {
+    "start": "Stand tall with arms lowered, palms facing inward, wrists neutral, and elbows close to the torso.",
+    "finish": "Curl both dumbbells while preserving the palms-in grip and keeping the torso still.",
+    "avoid": ["rotating palms upward", "swinging", "leaning backward", "shrugging", "bent wrists"]
+  }
+}

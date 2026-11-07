@@ -1,0 +1,15 @@
+{
+  "exercise": "exercise-slug",
+  "variant": "male",
+  "modelReference": "assets/exercise-images/models/male.png",
+  "generator": "",
+  "generatorModel": "",
+  "generationId": "",
+  "generatedAt": "",
+  "prompt": "",
+  "sourceSha256": "",
+  "review": {
+    "status": "approved",
+    "notes": ""
+  }
+}
