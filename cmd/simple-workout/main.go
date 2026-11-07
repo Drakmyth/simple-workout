@@ -9,32 +9,32 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/Drakmyth/simple-workout/internal/app"
 )
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	application, err := app.New(context.Background(), app.Config{
+		DataDir: envOrDefault("DATA_DIR", "data"),
+		Logger:  logger,
+	})
+	if err != nil {
+		logger.Error("initialize application", "error", err)
+		os.Exit(1)
+	}
+	defer application.Close()
+
 	address := envOrDefault("LISTEN_ADDRESS", ":8080")
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		_, _ = w.Write([]byte("ok\n"))
-	})
-	mux.HandleFunc("GET /", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		_, _ = w.Write([]byte("Simple Workout\n"))
-	})
-
 	server := &http.Server{
 		Addr:              address,
-		Handler:           mux,
+		Handler:           application.Handler(),
 		ReadHeaderTimeout: 5 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
 
 	shutdown, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-
 	go func() {
 		<-shutdown.Done()
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
