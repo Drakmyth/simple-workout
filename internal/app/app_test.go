@@ -57,3 +57,24 @@ func TestInitialSettings(t *testing.T) {
 		t.Fatalf("settings = (%d, %q), want (60, kg)", restSeconds, weightUnit)
 	}
 }
+
+func TestMigrationsAreRecordedAndIdempotent(t *testing.T) {
+	application := newTestApp(t)
+	assertMigrationCount(t, application, 1)
+
+	if err := applyMigrations(context.Background(), application.db); err != nil {
+		t.Fatalf("applyMigrations() error = %v", err)
+	}
+	assertMigrationCount(t, application, 1)
+}
+
+func assertMigrationCount(t *testing.T, application *App, want int) {
+	t.Helper()
+	var count int
+	if err := application.db.QueryRow("SELECT COUNT(*) FROM schema_migrations").Scan(&count); err != nil {
+		t.Fatalf("count migrations: %v", err)
+	}
+	if count != want {
+		t.Fatalf("migration count = %d, want %d", count, want)
+	}
+}
