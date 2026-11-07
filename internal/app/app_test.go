@@ -60,12 +60,12 @@ func TestInitialSettings(t *testing.T) {
 
 func TestMigrationsAreRecordedAndIdempotent(t *testing.T) {
 	application := newTestApp(t)
-	assertMigrationCount(t, application, 2)
+	assertMigrationCount(t, application, 3)
 
 	if err := applyMigrations(context.Background(), application.db); err != nil {
 		t.Fatalf("applyMigrations() error = %v", err)
 	}
-	assertMigrationCount(t, application, 2)
+	assertMigrationCount(t, application, 3)
 }
 
 func assertMigrationCount(t *testing.T, application *App, want int) {
