@@ -26,7 +26,7 @@ type Config struct {
 }
 
 type App struct {
-	db        *sql.DB
+	store     *Store
 	handler   http.Handler
 	templates *template.Template
 	logger    *slog.Logger
@@ -62,7 +62,7 @@ func New(ctx context.Context, config Config) (*App, error) {
 		return nil, fmt.Errorf("open static files: %w", err)
 	}
 
-	application := &App{db: db, templates: templates, logger: config.Logger}
+	application := &App{store: &Store{db: db}, templates: templates, logger: config.Logger}
 	mux := http.NewServeMux()
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static)))
 	mux.HandleFunc("GET /health", health)
@@ -96,7 +96,7 @@ func (a *App) Handler() http.Handler {
 }
 
 func (a *App) Close() error {
-	return a.db.Close()
+	return a.store.Close()
 }
 
 func initializeDatabase(ctx context.Context, db *sql.DB) error {

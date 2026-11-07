@@ -50,7 +50,7 @@ func TestInitialSettings(t *testing.T) {
 	application := newTestApp(t)
 	var restSeconds int
 	var weightUnit string
-	if err := application.db.QueryRow("SELECT rest_seconds, weight_unit FROM settings WHERE id = 1").Scan(&restSeconds, &weightUnit); err != nil {
+	if err := application.store.db.QueryRow("SELECT rest_seconds, weight_unit FROM settings WHERE id = 1").Scan(&restSeconds, &weightUnit); err != nil {
 		t.Fatalf("query settings: %v", err)
 	}
 	if restSeconds != 60 || weightUnit != "kg" {
@@ -62,7 +62,7 @@ func TestMigrationsAreRecordedAndIdempotent(t *testing.T) {
 	application := newTestApp(t)
 	assertMigrationCount(t, application, 3)
 
-	if err := applyMigrations(context.Background(), application.db); err != nil {
+	if err := applyMigrations(context.Background(), application.store.db); err != nil {
 		t.Fatalf("applyMigrations() error = %v", err)
 	}
 	assertMigrationCount(t, application, 3)
@@ -71,7 +71,7 @@ func TestMigrationsAreRecordedAndIdempotent(t *testing.T) {
 func assertMigrationCount(t *testing.T, application *App, want int) {
 	t.Helper()
 	var count int
-	if err := application.db.QueryRow("SELECT COUNT(*) FROM schema_migrations").Scan(&count); err != nil {
+	if err := application.store.db.QueryRow("SELECT COUNT(*) FROM schema_migrations").Scan(&count); err != nil {
 		t.Fatalf("count migrations: %v", err)
 	}
 	if count != want {
