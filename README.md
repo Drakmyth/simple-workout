@@ -41,15 +41,11 @@ By default, the app is available at <http://localhost:8080>. Copy `.env.example`
 
 Runtime data is stored in the `workout-data` volume.
 
-### Traefik
+### Reverse proxies
 
-Set `APP_HOST` and, if necessary, `TRAEFIK_NETWORK` and `TRAEFIK_ENTRYPOINT` in `.env`. The named Traefik network must already exist. Start the app with the Traefik overlay:
+The application serves plain HTTP on container port 8080 and does not manage TLS. A reverse proxy can reach it through the published host port or by sharing its Docker network. Configure the proxy to forward requests without changing their path and to provide HTTPS externally.
 
-```sh
-docker compose -f compose.yaml -f compose.traefik.yaml up --build -d
-```
-
-Traefik routes HTTPS traffic to the app's internal port 8080. The direct localhost port remains available for diagnostics. Certificate resolver configuration remains owned by the existing Traefik deployment.
+When the proxy shares the Docker network, it should route to service `app` on port 8080. The published host port can remain bound to `127.0.0.1` for local diagnostics.
 
 ## License
 
