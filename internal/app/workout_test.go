@@ -73,13 +73,8 @@ func TestAddMoveAndRemoveWorkoutExercise(t *testing.T) {
 	if err != nil {
 		t.Fatalf("workout(1) after remove error = %v", err)
 	}
-	if len(workout.Exercises) != 5 {
-		t.Fatalf("exercise count = %d, want 5", len(workout.Exercises))
-	}
-	for position, exercise := range workout.Exercises {
-		if exercise.Position != position {
-			t.Fatalf("exercise position = %d, want %d", exercise.Position, position)
-		}
+	if len(workout.Exercises) != 5 || workout.Exercises[4].Slug != "dead-bug" {
+		t.Fatalf("compacted exercises = %#v", workout.Exercises)
 	}
 	if err := application.addWorkoutExercise(1, 5); err != nil {
 		t.Fatalf("add duplicate exercise error = %v", err)

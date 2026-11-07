@@ -19,12 +19,11 @@ type Workout struct {
 }
 
 type WorkoutExercise struct {
-	Position int
-	Slug     string
-	Name     string
-	Sets     int
-	Reps     int
-	Weight   *float64
+	Slug   string
+	Name   string
+	Sets   int
+	Reps   int
+	Weight *float64
 }
 
 func (a *App) workouts() ([]WorkoutSummary, error) {
@@ -54,7 +53,7 @@ func (a *App) workout(id int64) (Workout, error) {
 	if err := a.db.QueryRow("SELECT id, name FROM workouts WHERE id = ?", id).Scan(&workout.ID, &workout.Name); err != nil {
 		return Workout{}, fmt.Errorf("query workout: %w", err)
 	}
-	rows, err := a.db.Query(`SELECT we.position, e.slug, e.name, we.sets, we.reps, we.weight
+	rows, err := a.db.Query(`SELECT e.slug, e.name, we.sets, we.reps, we.weight
 		FROM workout_exercises we JOIN exercises e ON e.id = we.exercise_id
 		WHERE we.workout_id = ? ORDER BY we.position`, id)
 	if err != nil {
@@ -64,7 +63,7 @@ func (a *App) workout(id int64) (Workout, error) {
 	for rows.Next() {
 		var item WorkoutExercise
 		var weight sql.NullFloat64
-		if err := rows.Scan(&item.Position, &item.Slug, &item.Name, &item.Sets, &item.Reps, &weight); err != nil {
+		if err := rows.Scan(&item.Slug, &item.Name, &item.Sets, &item.Reps, &weight); err != nil {
 			return Workout{}, fmt.Errorf("scan workout exercise: %w", err)
 		}
 		if weight.Valid {
