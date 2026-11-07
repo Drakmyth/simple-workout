@@ -8,6 +8,6 @@ Generate a reviewed 1536 x 1024 PNG for each `<exercise>-<variant>` pair in `ref
 ./scripts/process-exercise-images.sh
 ```
 
-The pinned ImageMagick container validates dimensions, splits each source into start and finish poses, removes metadata, and writes optimized WebP application assets. Source PNGs under `reference/` are temporary and must not be committed.
+The pinned ImageMagick container validates dimensions, applies any reviewed center cleanup from `processing.tsv`, removes metadata, and writes optimized composite WebP application assets. Source PNGs under `reference/` are temporary and must not be committed.
 
 See `.agents/skills/exercise-image-generation/` for the complete generation and review workflow.

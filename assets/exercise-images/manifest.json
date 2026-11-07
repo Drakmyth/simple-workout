@@ -5,10 +5,7 @@
     "modelReference": "assets/exercise-images/models/female.png",
     "promptRecipe": "assets/exercise-images/requirements.json#biceps-curl",
     "sourceSha256": "92f7a4515422e25e942f6b6808279e1fc6db82402eaa365d8606daee21eb3e8d",
-    "outputs": [
-      "internal/app/static/images/exercises/biceps-curl-female-start.webp",
-      "internal/app/static/images/exercises/biceps-curl-female-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/biceps-curl-female.webp",
     "reviewStatus": "approved"
   },
   {
@@ -17,10 +14,7 @@
     "modelReference": "assets/exercise-images/models/male.png",
     "promptRecipe": "assets/exercise-images/requirements.json#biceps-curl",
     "sourceSha256": "a3823a7efbdb9ebacc7fb9e56eb2d85b3a76869e32cd51d1143608bb9de1df6d",
-    "outputs": [
-      "internal/app/static/images/exercises/biceps-curl-male-start.webp",
-      "internal/app/static/images/exercises/biceps-curl-male-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/biceps-curl-male.webp",
     "reviewStatus": "approved"
   },
   {
@@ -29,10 +23,7 @@
     "modelReference": "assets/exercise-images/models/female.png",
     "promptRecipe": "assets/exercise-images/requirements.json#dead-bug",
     "sourceSha256": "f0a90349988a4434bb2227fab91b39377a3ae7c30f8298c5e3314d5387b3bec6",
-    "outputs": [
-      "internal/app/static/images/exercises/dead-bug-female-start.webp",
-      "internal/app/static/images/exercises/dead-bug-female-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/dead-bug-female.webp",
     "reviewStatus": "approved"
   },
   {
@@ -41,10 +32,7 @@
     "modelReference": "assets/exercise-images/models/male.png",
     "promptRecipe": "assets/exercise-images/requirements.json#dead-bug",
     "sourceSha256": "aa267dbee7acede821de96b6a5a2ba4258f8a563ae86c76dc24cdb4ef5d0173d",
-    "outputs": [
-      "internal/app/static/images/exercises/dead-bug-male-start.webp",
-      "internal/app/static/images/exercises/dead-bug-male-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/dead-bug-male.webp",
     "reviewStatus": "approved"
   },
   {
@@ -53,10 +41,7 @@
     "modelReference": "assets/exercise-images/models/female.png",
     "promptRecipe": "assets/exercise-images/requirements.json#dumbbell-floor-press",
     "sourceSha256": "83b6badbe52c1ac304bc9d21fad2b605442b38d8d372aa7a6b3affed4ab4efda",
-    "outputs": [
-      "internal/app/static/images/exercises/dumbbell-floor-press-female-start.webp",
-      "internal/app/static/images/exercises/dumbbell-floor-press-female-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/dumbbell-floor-press-female.webp",
     "reviewStatus": "approved"
   },
   {
@@ -65,10 +50,7 @@
     "modelReference": "assets/exercise-images/models/male.png",
     "promptRecipe": "assets/exercise-images/requirements.json#dumbbell-floor-press",
     "sourceSha256": "f1b39c0cd59cd7eb02f619bf62f1d5f0f6fe86300d2d0797f987425bf7fefc0d",
-    "outputs": [
-      "internal/app/static/images/exercises/dumbbell-floor-press-male-start.webp",
-      "internal/app/static/images/exercises/dumbbell-floor-press-male-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/dumbbell-floor-press-male.webp",
     "reviewStatus": "approved"
   },
   {
@@ -77,10 +59,7 @@
     "modelReference": "assets/exercise-images/models/female.png",
     "promptRecipe": "assets/exercise-images/requirements.json#dumbbell-romanian-deadlift",
     "sourceSha256": "29e8fca7ed5eea1f175042d5efa42af8b5005e6dd73d58024cbbcad1a2134925",
-    "outputs": [
-      "internal/app/static/images/exercises/dumbbell-romanian-deadlift-female-start.webp",
-      "internal/app/static/images/exercises/dumbbell-romanian-deadlift-female-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/dumbbell-romanian-deadlift-female.webp",
     "reviewStatus": "approved"
   },
   {
@@ -89,10 +68,7 @@
     "modelReference": "assets/exercise-images/models/male.png",
     "promptRecipe": "assets/exercise-images/requirements.json#dumbbell-romanian-deadlift",
     "sourceSha256": "3139f2e4133c38e41cb61a79ab254bd0a6246bceb8fc146bbb6000094a3ba920",
-    "outputs": [
-      "internal/app/static/images/exercises/dumbbell-romanian-deadlift-male-start.webp",
-      "internal/app/static/images/exercises/dumbbell-romanian-deadlift-male-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/dumbbell-romanian-deadlift-male.webp",
     "reviewStatus": "approved"
   },
   {
@@ -101,10 +77,7 @@
     "modelReference": "assets/exercise-images/models/female.png",
     "promptRecipe": "assets/exercise-images/requirements.json#goblet-squat",
     "sourceSha256": "bf2ad21b9ea372d008eca3e9d19f2447b4a9eb9020c78de5f848b10a79e1115c",
-    "outputs": [
-      "internal/app/static/images/exercises/goblet-squat-female-start.webp",
-      "internal/app/static/images/exercises/goblet-squat-female-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/goblet-squat-female.webp",
     "reviewStatus": "approved"
   },
   {
@@ -113,10 +86,7 @@
     "modelReference": "assets/exercise-images/models/male.png",
     "promptRecipe": "assets/exercise-images/requirements.json#goblet-squat",
     "sourceSha256": "ebe3363eed9ee4d7dd1ae1a1ebbc18ea159ff6c238c31379313601a8c441cea3",
-    "outputs": [
-      "internal/app/static/images/exercises/goblet-squat-male-start.webp",
-      "internal/app/static/images/exercises/goblet-squat-male-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/goblet-squat-male.webp",
     "reviewStatus": "approved"
   },
   {
@@ -125,10 +95,7 @@
     "modelReference": "assets/exercise-images/models/female.png",
     "promptRecipe": "assets/exercise-images/requirements.json#incline-push-up",
     "sourceSha256": "469153c1e24ab5fb1008011f1846f2902fe5d70f38c32017d57a4698ef31379b",
-    "outputs": [
-      "internal/app/static/images/exercises/incline-push-up-female-start.webp",
-      "internal/app/static/images/exercises/incline-push-up-female-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/incline-push-up-female.webp",
     "reviewStatus": "approved"
   },
   {
@@ -137,10 +104,7 @@
     "modelReference": "assets/exercise-images/models/male.png",
     "promptRecipe": "assets/exercise-images/requirements.json#incline-push-up",
     "sourceSha256": "a957eb5ee44677469dc34df37b4d016dac459d3c8c05c408f66c934d8bcbc93e",
-    "outputs": [
-      "internal/app/static/images/exercises/incline-push-up-male-start.webp",
-      "internal/app/static/images/exercises/incline-push-up-male-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/incline-push-up-male.webp",
     "reviewStatus": "approved"
   },
   {
@@ -149,10 +113,7 @@
     "modelReference": "assets/exercise-images/models/female.png",
     "promptRecipe": "assets/exercise-images/requirements.json#one-arm-dumbbell-row",
     "sourceSha256": "ddd9f5df2677d24970fd2ce8342692aafea6a168e7aa7234c61d672e26e32a66",
-    "outputs": [
-      "internal/app/static/images/exercises/one-arm-dumbbell-row-female-start.webp",
-      "internal/app/static/images/exercises/one-arm-dumbbell-row-female-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/one-arm-dumbbell-row-female.webp",
     "reviewStatus": "approved"
   },
   {
@@ -161,10 +122,7 @@
     "modelReference": "assets/exercise-images/models/male.png",
     "promptRecipe": "assets/exercise-images/requirements.json#one-arm-dumbbell-row",
     "sourceSha256": "de6b705764e20a57650a123dba48a99125ae1e146bd44eb0d82751bec0a53238",
-    "outputs": [
-      "internal/app/static/images/exercises/one-arm-dumbbell-row-male-start.webp",
-      "internal/app/static/images/exercises/one-arm-dumbbell-row-male-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/one-arm-dumbbell-row-male.webp",
     "reviewStatus": "approved"
   },
   {
@@ -173,10 +131,7 @@
     "modelReference": "assets/exercise-images/models/female.png",
     "promptRecipe": "assets/exercise-images/requirements.json#standing-calf-raise",
     "sourceSha256": "0bf3e8ca50b778fec0eddbd2629d17da864a38b9c07609404eacbadd9d10e990",
-    "outputs": [
-      "internal/app/static/images/exercises/standing-calf-raise-female-start.webp",
-      "internal/app/static/images/exercises/standing-calf-raise-female-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/standing-calf-raise-female.webp",
     "reviewStatus": "approved"
   },
   {
@@ -185,10 +140,7 @@
     "modelReference": "assets/exercise-images/models/male.png",
     "promptRecipe": "assets/exercise-images/requirements.json#standing-calf-raise",
     "sourceSha256": "0d2dbf26fe71cb5bd10c8361900f2f4861176266f956ea0eb572f1fed412e4c7",
-    "outputs": [
-      "internal/app/static/images/exercises/standing-calf-raise-male-start.webp",
-      "internal/app/static/images/exercises/standing-calf-raise-male-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/standing-calf-raise-male.webp",
     "reviewStatus": "approved"
   },
   {
@@ -197,10 +149,7 @@
     "modelReference": "assets/exercise-images/models/female.png",
     "promptRecipe": "assets/exercise-images/requirements.json#standing-hammer-curl",
     "sourceSha256": "1fd54099ac615f171a934dea78d7d15034d4c104a02e040171b2df3cae7968f6",
-    "outputs": [
-      "internal/app/static/images/exercises/standing-hammer-curl-female-start.webp",
-      "internal/app/static/images/exercises/standing-hammer-curl-female-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/standing-hammer-curl-female.webp",
     "reviewStatus": "approved"
   },
   {
@@ -209,10 +158,7 @@
     "modelReference": "assets/exercise-images/models/male.png",
     "promptRecipe": "assets/exercise-images/requirements.json#standing-hammer-curl",
     "sourceSha256": "8be5e2c4ae0b6ba1dd1d1464482865243ae2fc70b53b3415c50ddd397d60072d",
-    "outputs": [
-      "internal/app/static/images/exercises/standing-hammer-curl-male-start.webp",
-      "internal/app/static/images/exercises/standing-hammer-curl-male-finish.webp"
-    ],
+    "output": "internal/app/static/images/exercises/standing-hammer-curl-male.webp",
     "reviewStatus": "approved"
   }
 ]

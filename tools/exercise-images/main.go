@@ -14,13 +14,13 @@ import (
 )
 
 type entry struct {
-	Exercise       string   `json:"exercise"`
-	Variant        string   `json:"variant"`
-	ModelReference string   `json:"modelReference"`
-	PromptRecipe   string   `json:"promptRecipe"`
-	SourceSHA256   string   `json:"sourceSha256"`
-	Outputs        []string `json:"outputs"`
-	ReviewStatus   string   `json:"reviewStatus"`
+	Exercise       string `json:"exercise"`
+	Variant        string `json:"variant"`
+	ModelReference string `json:"modelReference"`
+	PromptRecipe   string `json:"promptRecipe"`
+	SourceSHA256   string `json:"sourceSha256"`
+	Output         string `json:"output"`
+	ReviewStatus   string `json:"reviewStatus"`
 }
 
 func main() {
@@ -60,11 +60,8 @@ func run(sourceDir, requirementsPath, outputPath string) error {
 				ModelReference: "assets/exercise-images/models/" + variant + ".png",
 				PromptRecipe:   "assets/exercise-images/requirements.json#" + exercise,
 				SourceSHA256:   hash,
-				Outputs: []string{
-					"internal/app/static/images/exercises/" + name + "-start.webp",
-					"internal/app/static/images/exercises/" + name + "-finish.webp",
-				},
-				ReviewStatus: "approved",
+				Output:         "internal/app/static/images/exercises/" + name + ".webp",
+				ReviewStatus:   "approved",
 			})
 		}
 	}

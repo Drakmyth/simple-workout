@@ -19,12 +19,11 @@
 ## Composition
 
 - Source is 1536 x 1024 and landscape.
-- Start pose remains within the left half.
-- Finish pose remains within the right half.
+- Start pose appears clearly on the left and finish pose on the right.
 - Both poses include complete relevant anatomy and equipment.
 - Scale and camera angle are consistent.
-- Each half remains understandable when displayed beside the other on a portrait phone.
-- A central gutter or tonal seam is acceptable because processing separates the halves.
+- The full composition remains understandable at portrait-phone width.
+- No visible divider, displaced anatomy, or center-gutter artifact remains.
 
 ## Presentation
 

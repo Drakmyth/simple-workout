@@ -17,12 +17,12 @@
 - Landscape 3:2 canvas containing two equal visual halves
 - Start pose entirely in the left half
 - Finish pose entirely in the right half
-- Clear central separation without a required visible divider
+- Clear central separation without a visible divider
 - Same model, scale, camera angle, lighting, and equipment in both halves
-- Complete anatomy and equipment contained within each half
-- Balanced margins suitable for deterministic left/right processing
+- Complete anatomy and equipment visible in the full composition
+- Balanced margins around both poses
 
-The application presents both processed poses side by side on portrait mobile screens. Do not depend on a carousel or embedded instructional text.
+The application presents the optimized composite directly on portrait mobile screens. Do not depend on a carousel or embedded instructional text.
 
 ## Model variants
 
