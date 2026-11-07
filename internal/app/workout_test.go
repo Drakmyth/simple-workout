@@ -56,9 +56,6 @@ func TestAddMoveAndRemoveWorkoutExercise(t *testing.T) {
 	if err := application.addWorkoutExercise(1, 9); err != nil {
 		t.Fatalf("addWorkoutExercise() error = %v", err)
 	}
-	if err := application.addWorkoutExercise(1, 9); err == nil {
-		t.Fatal("duplicate addWorkoutExercise() error = nil")
-	}
 	if err := application.moveWorkoutExercise(1, 5, -1); err != nil {
 		t.Fatalf("moveWorkoutExercise() error = %v", err)
 	}
@@ -83,5 +80,12 @@ func TestAddMoveAndRemoveWorkoutExercise(t *testing.T) {
 		if exercise.Position != position {
 			t.Fatalf("exercise position = %d, want %d", exercise.Position, position)
 		}
+	}
+	if err := application.addWorkoutExercise(1, 5); err != nil {
+		t.Fatalf("add duplicate exercise error = %v", err)
+	}
+	workout, err = application.workout(1)
+	if err != nil || len(workout.Exercises) != 6 || workout.Exercises[5].Slug != "dead-bug" {
+		t.Fatalf("workout with duplicate exercise = (%#v, %v)", workout, err)
 	}
 }

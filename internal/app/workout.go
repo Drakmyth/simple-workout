@@ -103,9 +103,7 @@ func (a *App) addWorkoutExercise(workoutID, exerciseID int64) error {
 	return a.withWorkoutTx(workoutID, func(tx *sql.Tx) error {
 		result, err := tx.Exec(`INSERT INTO workout_exercises (workout_id, position, exercise_id, sets, reps)
 			SELECT ?, COALESCE(MAX(position), -1) + 1, ?, 2, 10 FROM workout_exercises
-			WHERE workout_id = ? HAVING NOT EXISTS (
-				SELECT 1 FROM workout_exercises WHERE workout_id = ? AND exercise_id = ?
-			)`, workoutID, exerciseID, workoutID, workoutID, exerciseID)
+			WHERE workout_id = ?`, workoutID, exerciseID, workoutID)
 		if err != nil {
 			return fmt.Errorf("add workout exercise: %w", err)
 		}
