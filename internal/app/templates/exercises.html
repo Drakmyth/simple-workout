@@ -1,0 +1,47 @@
+{{define "exercises.html"}}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#b4232c">
+  <title>Exercises - Simple Workout</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/">Simple Workout</a>
+    <nav><a aria-current="page" href="/exercises">Exercises</a></nav>
+  </header>
+  <main>
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">Movement library</p>
+        <h1>Exercises</h1>
+      </div>
+      <form class="preference" method="post" action="/exercises/image-variant" data-auto-submit>
+        <input type="hidden" name="return_to" value="/exercises">
+        <label for="image-preference">Image model</label>
+        <div class="form-row">
+          <select id="image-preference" name="image_variant">
+            <option value="male" {{if eq .Variant "male"}}selected{{end}}>Male</option>
+            <option value="female" {{if eq .Variant "female"}}selected{{end}}>Female</option>
+          </select>
+          <button type="submit" data-submit>Apply</button>
+        </div>
+      </form>
+    </div>
+    <div class="exercise-grid">
+      {{range .Exercises}}
+      <a class="exercise-card" href="/exercises/{{.Slug}}">
+        <img src="{{.Image.Path}}" alt="{{.Image.AltText}}" width="1536" height="1024">
+        <div>
+          <h2>{{.Name}}</h2>
+          <p>{{.Notes}}</p>
+        </div>
+      </a>
+      {{end}}
+    </div>
+  </main>
+</body>
+</html>{{end}}
