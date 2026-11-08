@@ -6,34 +6,6 @@ import (
 	"strings"
 )
 
-type WorkoutSummary struct {
-	ID            int64
-	Name          string
-	ExerciseCount int
-}
-
-type Workout struct {
-	ID        int64
-	Name      string
-	Exercises []WorkoutExercise
-}
-
-type WorkoutExercise struct {
-	Slug   string
-	Name   string
-	Sets   int
-	Reps   int
-	Weight *float64
-}
-
-func (s *Store) weightUnit() (string, error) {
-	var unit string
-	if err := s.db.QueryRow("SELECT weight_unit FROM settings WHERE id = 1").Scan(&unit); err != nil {
-		return "", fmt.Errorf("query weight unit: %w", err)
-	}
-	return unit, nil
-}
-
 func (s *Store) workouts() ([]WorkoutSummary, error) {
 	rows, err := s.db.Query(`SELECT w.id, w.name, COUNT(we.exercise_id)
 		FROM workouts w LEFT JOIN workout_exercises we ON we.workout_id = w.id

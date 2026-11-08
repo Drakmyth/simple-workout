@@ -1,33 +1,6 @@
 package app
 
-import (
-	"crypto/rand"
-	"database/sql"
-	"errors"
-	"fmt"
-	"io"
-)
-
-const (
-	imageMale        = "male"
-	imageFemale      = "female"
-	imageRandom      = "random"
-	imageAlternating = "alternating"
-)
-
-type Exercise struct {
-	ID     int64
-	Slug   string
-	Name   string
-	Notes  string
-	Steps  []string
-	Images map[string]ExerciseImage
-}
-
-type ExerciseImage struct {
-	Path    string
-	AltText string
-}
+import "fmt"
 
 func (s *Store) exercises() ([]Exercise, error) {
 	rows, err := s.db.Query(`SELECT e.id, e.slug, e.name, e.notes, i.variant, i.path, i.alt_text
@@ -118,62 +91,4 @@ func (s *Store) exerciseSteps(id int64) ([]string, error) {
 		return nil, fmt.Errorf("read exercise steps: %w", err)
 	}
 	return steps, nil
-}
-
-func (s *Store) imagePreference() (string, error) {
-	var preference string
-	if err := s.db.QueryRow("SELECT image_preference FROM settings WHERE id = 1").Scan(&preference); err != nil {
-		return "", fmt.Errorf("query image preference: %w", err)
-	}
-	return preference, nil
-}
-
-func (s *Store) setImagePreference(preference string) error {
-	if !validImagePreference(preference) {
-		return fmt.Errorf("invalid image preference %q", preference)
-	}
-	if _, err := s.db.Exec("UPDATE settings SET image_preference = ? WHERE id = 1", preference); err != nil {
-		return fmt.Errorf("update image preference: %w", err)
-	}
-	return nil
-}
-
-func validImagePreference(preference string) bool {
-	switch preference {
-	case imageMale, imageFemale, imageRandom, imageAlternating:
-		return true
-	default:
-		return false
-	}
-}
-
-func selectImageVariant(preference, alternatingNext string) (variant, next string, err error) {
-	switch preference {
-	case imageMale, imageFemale:
-		return preference, alternatingNext, nil
-	case imageAlternating:
-		if alternatingNext != imageFemale {
-			return imageMale, imageFemale, nil
-		}
-		return imageFemale, imageMale, nil
-	case imageRandom:
-		return randomImageVariant(rand.Reader)
-	default:
-		return "", alternatingNext, fmt.Errorf("invalid image preference %q", preference)
-	}
-}
-
-func randomImageVariant(source io.Reader) (variant, next string, err error) {
-	var value [1]byte
-	if _, err := io.ReadFull(source, value[:]); err != nil {
-		return "", "", fmt.Errorf("choose random image variant: %w", err)
-	}
-	if value[0]&1 == 0 {
-		return imageMale, "", nil
-	}
-	return imageFemale, "", nil
-}
-
-func isNotFound(err error) bool {
-	return errors.Is(err, sql.ErrNoRows)
 }
