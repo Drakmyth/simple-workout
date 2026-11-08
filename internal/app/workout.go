@@ -26,16 +26,16 @@ type WorkoutExercise struct {
 	Weight *float64
 }
 
-func (a *App) weightUnit() (string, error) {
+func (s *Store) weightUnit() (string, error) {
 	var unit string
-	if err := a.db.QueryRow("SELECT weight_unit FROM settings WHERE id = 1").Scan(&unit); err != nil {
+	if err := s.db.QueryRow("SELECT weight_unit FROM settings WHERE id = 1").Scan(&unit); err != nil {
 		return "", fmt.Errorf("query weight unit: %w", err)
 	}
 	return unit, nil
 }
 
-func (a *App) workouts() ([]WorkoutSummary, error) {
-	rows, err := a.db.Query(`SELECT w.id, w.name, COUNT(we.exercise_id)
+func (s *Store) workouts() ([]WorkoutSummary, error) {
+	rows, err := s.db.Query(`SELECT w.id, w.name, COUNT(we.exercise_id)
 		FROM workouts w LEFT JOIN workout_exercises we ON we.workout_id = w.id
 		GROUP BY w.id ORDER BY w.id`)
 	if err != nil {
@@ -56,52 +56,62 @@ func (a *App) workouts() ([]WorkoutSummary, error) {
 	return workouts, nil
 }
 
-func (a *App) workout(id int64) (Workout, error) {
+func (s *Store) workout(id int64) (Workout, error) {
 	var workout Workout
-	if err := a.db.QueryRow("SELECT id, name FROM workouts WHERE id = ?", id).Scan(&workout.ID, &workout.Name); err != nil {
+	if err := s.db.QueryRow("SELECT id, name FROM workouts WHERE id = ?", id).Scan(&workout.ID, &workout.Name); err != nil {
 		return Workout{}, fmt.Errorf("query workout: %w", err)
 	}
-	rows, err := a.db.Query(`SELECT e.slug, e.name, we.sets, we.reps, we.weight
-		FROM workout_exercises we JOIN exercises e ON e.id = we.exercise_id
-		WHERE we.workout_id = ? ORDER BY we.position`, id)
+	exercises, err := s.workoutExercises(id)
 	if err != nil {
-		return Workout{}, fmt.Errorf("query workout exercises: %w", err)
+		return Workout{}, err
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var item WorkoutExercise
-		var weight sql.NullFloat64
-		if err := rows.Scan(&item.Slug, &item.Name, &item.Sets, &item.Reps, &weight); err != nil {
-			return Workout{}, fmt.Errorf("scan workout exercise: %w", err)
-		}
-		if weight.Valid {
-			item.Weight = &weight.Float64
-		}
-		workout.Exercises = append(workout.Exercises, item)
-	}
-	if err := rows.Err(); err != nil {
-		return Workout{}, fmt.Errorf("read workout exercises: %w", err)
-	}
+	workout.Exercises = exercises
 	return workout, nil
 }
 
-func (a *App) renameWorkout(id int64, name string) error {
+func (s *Store) workoutExercises(id int64) ([]WorkoutExercise, error) {
+	rows, err := s.db.Query(`SELECT e.slug, e.name, we.sets, we.reps, we.weight
+		FROM workout_exercises we JOIN exercises e ON e.id = we.exercise_id
+		WHERE we.workout_id = ? ORDER BY we.position`, id)
+	if err != nil {
+		return nil, fmt.Errorf("query workout exercises: %w", err)
+	}
+	defer rows.Close()
+	var exercises []WorkoutExercise
+	for rows.Next() {
+		var exercise WorkoutExercise
+		var weight sql.NullFloat64
+		if err := rows.Scan(&exercise.Slug, &exercise.Name, &exercise.Sets, &exercise.Reps, &weight); err != nil {
+			return nil, fmt.Errorf("scan workout exercise: %w", err)
+		}
+		if weight.Valid {
+			exercise.Weight = &weight.Float64
+		}
+		exercises = append(exercises, exercise)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("read workout exercises: %w", err)
+	}
+	return exercises, nil
+}
+
+func (s *Store) renameWorkout(id int64, name string) error {
 	name = strings.TrimSpace(name)
 	if name == "" {
 		return fmt.Errorf("workout name is required")
 	}
-	result, err := a.db.Exec("UPDATE workouts SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", name, id)
+	result, err := s.db.Exec("UPDATE workouts SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", name, id)
 	if err != nil {
 		return fmt.Errorf("rename workout: %w", err)
 	}
 	return requireChanged(result, "workout")
 }
 
-func (a *App) updateWorkoutExercise(workoutID int64, position, sets, reps int, weight *float64) error {
+func (s *Store) updateWorkoutExercise(workoutID int64, position, sets, reps int, weight *float64) error {
 	if position < 0 || sets < 1 || reps < 1 || weight != nil && *weight < 0 {
 		return fmt.Errorf("invalid workout exercise values")
 	}
-	return a.withWorkoutTx(workoutID, func(tx *sql.Tx) error {
+	return s.withWorkoutTx(workoutID, func(tx *sql.Tx) error {
 		result, err := tx.Exec(`UPDATE workout_exercises SET sets = ?, reps = ?, weight = ?
 			WHERE workout_id = ? AND position = ?`, sets, reps, weight, workoutID, position)
 		if err != nil {
@@ -111,8 +121,8 @@ func (a *App) updateWorkoutExercise(workoutID int64, position, sets, reps int, w
 	})
 }
 
-func (a *App) addWorkoutExercise(workoutID, exerciseID int64) error {
-	return a.withWorkoutTx(workoutID, func(tx *sql.Tx) error {
+func (s *Store) addWorkoutExercise(workoutID, exerciseID int64) error {
+	return s.withWorkoutTx(workoutID, func(tx *sql.Tx) error {
 		result, err := tx.Exec(`INSERT INTO workout_exercises (workout_id, position, exercise_id, sets, reps)
 			SELECT ?, COALESCE(MAX(position), -1) + 1, ?, 2, 10 FROM workout_exercises
 			WHERE workout_id = ?`, workoutID, exerciseID, workoutID)
@@ -123,11 +133,11 @@ func (a *App) addWorkoutExercise(workoutID, exerciseID int64) error {
 	})
 }
 
-func (a *App) removeWorkoutExercise(workoutID int64, position int) error {
+func (s *Store) removeWorkoutExercise(workoutID int64, position int) error {
 	if position < 0 {
 		return fmt.Errorf("invalid workout exercise position")
 	}
-	return a.withWorkoutTx(workoutID, func(tx *sql.Tx) error {
+	return s.withWorkoutTx(workoutID, func(tx *sql.Tx) error {
 		result, err := tx.Exec("DELETE FROM workout_exercises WHERE workout_id = ? AND position = ?", workoutID, position)
 		if err != nil {
 			return fmt.Errorf("remove workout exercise: %w", err)
@@ -149,12 +159,12 @@ func (a *App) removeWorkoutExercise(workoutID int64, position int) error {
 	})
 }
 
-func (a *App) moveWorkoutExercise(workoutID int64, position, direction int) error {
+func (s *Store) moveWorkoutExercise(workoutID int64, position, direction int) error {
 	target := position + direction
 	if position < 0 || target < 0 || direction != -1 && direction != 1 {
 		return fmt.Errorf("invalid workout exercise move")
 	}
-	return a.withWorkoutTx(workoutID, func(tx *sql.Tx) error {
+	return s.withWorkoutTx(workoutID, func(tx *sql.Tx) error {
 		var temporary int
 		if err := tx.QueryRow("SELECT COALESCE(MAX(position), -1) + 1 FROM workout_exercises WHERE workout_id = ?", workoutID).Scan(&temporary); err != nil {
 			return fmt.Errorf("find temporary workout position: %w", err)
@@ -178,8 +188,8 @@ func (a *App) moveWorkoutExercise(workoutID int64, position, direction int) erro
 	})
 }
 
-func (a *App) withWorkoutTx(workoutID int64, operation func(*sql.Tx) error) error {
-	tx, err := a.db.Begin()
+func (s *Store) withWorkoutTx(workoutID int64, operation func(*sql.Tx) error) error {
+	tx, err := s.db.Begin()
 	if err != nil {
 		return fmt.Errorf("begin workout update: %w", err)
 	}

@@ -29,8 +29,8 @@ type ExerciseImage struct {
 	AltText string
 }
 
-func (a *App) exercises() ([]Exercise, error) {
-	rows, err := a.db.Query(`SELECT e.id, e.slug, e.name, e.notes, i.variant, i.path, i.alt_text
+func (s *Store) exercises() ([]Exercise, error) {
+	rows, err := s.db.Query(`SELECT e.id, e.slug, e.name, e.notes, i.variant, i.path, i.alt_text
 		FROM exercises e JOIN exercise_images i ON i.exercise_id = e.id
 		ORDER BY e.name, i.variant`)
 	if err != nil {
@@ -59,68 +59,80 @@ func (a *App) exercises() ([]Exercise, error) {
 	return exercises, nil
 }
 
-func (a *App) exercise(slug string) (Exercise, error) {
+func (s *Store) exercise(slug string) (Exercise, error) {
 	var exercise Exercise
 	var id int64
-	err := a.db.QueryRow("SELECT id, slug, name, notes FROM exercises WHERE slug = ?", slug).
+	err := s.db.QueryRow("SELECT id, slug, name, notes FROM exercises WHERE slug = ?", slug).
 		Scan(&id, &exercise.Slug, &exercise.Name, &exercise.Notes)
 	exercise.ID = id
 	if err != nil {
 		return Exercise{}, fmt.Errorf("query exercise: %w", err)
 	}
-	exercise.Images = make(map[string]ExerciseImage, 2)
-
-	rows, err := a.db.Query("SELECT variant, path, alt_text FROM exercise_images WHERE exercise_id = ? ORDER BY variant", id)
+	exercise.Images, err = s.exerciseImages(id)
 	if err != nil {
-		return Exercise{}, fmt.Errorf("query exercise images: %w", err)
+		return Exercise{}, err
 	}
-	for rows.Next() {
-		var variant string
-		var image ExerciseImage
-		if err := rows.Scan(&variant, &image.Path, &image.AltText); err != nil {
-			rows.Close()
-			return Exercise{}, fmt.Errorf("scan exercise image: %w", err)
-		}
-		exercise.Images[variant] = image
-	}
-	if err := rows.Close(); err != nil {
-		return Exercise{}, fmt.Errorf("close exercise images: %w", err)
-	}
-	if err := rows.Err(); err != nil {
-		return Exercise{}, fmt.Errorf("read exercise images: %w", err)
-	}
-
-	stepRows, err := a.db.Query("SELECT instruction FROM exercise_steps WHERE exercise_id = ? ORDER BY position", id)
+	exercise.Steps, err = s.exerciseSteps(id)
 	if err != nil {
-		return Exercise{}, fmt.Errorf("query exercise steps: %w", err)
-	}
-	defer stepRows.Close()
-	for stepRows.Next() {
-		var step string
-		if err := stepRows.Scan(&step); err != nil {
-			return Exercise{}, fmt.Errorf("scan exercise step: %w", err)
-		}
-		exercise.Steps = append(exercise.Steps, step)
-	}
-	if err := stepRows.Err(); err != nil {
-		return Exercise{}, fmt.Errorf("read exercise steps: %w", err)
+		return Exercise{}, err
 	}
 	return exercise, nil
 }
 
-func (a *App) imagePreference() (string, error) {
+func (s *Store) exerciseImages(id int64) (map[string]ExerciseImage, error) {
+	rows, err := s.db.Query("SELECT variant, path, alt_text FROM exercise_images WHERE exercise_id = ? ORDER BY variant", id)
+	if err != nil {
+		return nil, fmt.Errorf("query exercise images: %w", err)
+	}
+	defer rows.Close()
+	images := make(map[string]ExerciseImage, 2)
+	for rows.Next() {
+		var variant string
+		var image ExerciseImage
+		if err := rows.Scan(&variant, &image.Path, &image.AltText); err != nil {
+			return nil, fmt.Errorf("scan exercise image: %w", err)
+		}
+		images[variant] = image
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("read exercise images: %w", err)
+	}
+	return images, nil
+}
+
+func (s *Store) exerciseSteps(id int64) ([]string, error) {
+	rows, err := s.db.Query("SELECT instruction FROM exercise_steps WHERE exercise_id = ? ORDER BY position", id)
+	if err != nil {
+		return nil, fmt.Errorf("query exercise steps: %w", err)
+	}
+	defer rows.Close()
+	var steps []string
+	for rows.Next() {
+		var step string
+		if err := rows.Scan(&step); err != nil {
+			return nil, fmt.Errorf("scan exercise step: %w", err)
+		}
+		steps = append(steps, step)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("read exercise steps: %w", err)
+	}
+	return steps, nil
+}
+
+func (s *Store) imagePreference() (string, error) {
 	var preference string
-	if err := a.db.QueryRow("SELECT image_preference FROM settings WHERE id = 1").Scan(&preference); err != nil {
+	if err := s.db.QueryRow("SELECT image_preference FROM settings WHERE id = 1").Scan(&preference); err != nil {
 		return "", fmt.Errorf("query image preference: %w", err)
 	}
 	return preference, nil
 }
 
-func (a *App) setImagePreference(preference string) error {
+func (s *Store) setImagePreference(preference string) error {
 	if !validImagePreference(preference) {
 		return fmt.Errorf("invalid image preference %q", preference)
 	}
-	if _, err := a.db.Exec("UPDATE settings SET image_preference = ? WHERE id = 1", preference); err != nil {
+	if _, err := s.db.Exec("UPDATE settings SET image_preference = ? WHERE id = 1", preference); err != nil {
 		return fmt.Errorf("update image preference: %w", err)
 	}
 	return nil

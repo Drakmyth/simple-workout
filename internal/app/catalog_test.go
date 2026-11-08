@@ -8,7 +8,7 @@ import (
 
 func TestSeededExerciseCatalog(t *testing.T) {
 	application := newTestApp(t)
-	exercises, err := application.exercises()
+	exercises, err := application.store.exercises()
 	if err != nil {
 		t.Fatalf("exercises() error = %v", err)
 	}
@@ -24,35 +24,35 @@ func TestSeededExerciseCatalog(t *testing.T) {
 		}
 	}
 
-	deadBug, err := application.exercise("dead-bug")
+	deadBug, err := application.store.exercise("dead-bug")
 	if err != nil {
 		t.Fatalf("exercise(dead-bug) error = %v", err)
 	}
 	if deadBug.Name != "Dead bug" || len(deadBug.Steps) != 3 {
 		t.Fatalf("dead bug = (%q, %d steps), want (Dead bug, 3 steps)", deadBug.Name, len(deadBug.Steps))
 	}
-	if _, err := application.exercise("missing"); !isNotFound(err) {
+	if _, err := application.store.exercise("missing"); !isNotFound(err) {
 		t.Fatalf("exercise(missing) error = %v, want sql.ErrNoRows", err)
 	}
 }
 
 func TestImagePreference(t *testing.T) {
 	application := newTestApp(t)
-	preference, err := application.imagePreference()
+	preference, err := application.store.imagePreference()
 	if err != nil {
 		t.Fatalf("imagePreference() error = %v", err)
 	}
 	if preference != imageAlternating {
 		t.Fatalf("initial preference = %q, want %q", preference, imageAlternating)
 	}
-	if err := application.setImagePreference(imageFemale); err != nil {
+	if err := application.store.setImagePreference(imageFemale); err != nil {
 		t.Fatalf("setImagePreference() error = %v", err)
 	}
-	preference, err = application.imagePreference()
+	preference, err = application.store.imagePreference()
 	if err != nil || preference != imageFemale {
 		t.Fatalf("updated preference = (%q, %v), want (%q, nil)", preference, err, imageFemale)
 	}
-	if err := application.setImagePreference("unsupported"); err == nil {
+	if err := application.store.setImagePreference("unsupported"); err == nil {
 		t.Fatal("setImagePreference(unsupported) error = nil")
 	}
 }

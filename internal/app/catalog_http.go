@@ -25,7 +25,7 @@ type exercisePage struct {
 }
 
 func (a *App) exerciseList(w http.ResponseWriter, r *http.Request) {
-	exercises, err := a.exercises()
+	exercises, err := a.store.exercises()
 	if err != nil {
 		a.serverError(w, "load exercise catalog", err)
 		return
@@ -39,7 +39,7 @@ func (a *App) exerciseList(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) exerciseDetail(w http.ResponseWriter, r *http.Request) {
-	exercise, err := a.exercise(r.PathValue("slug"))
+	exercise, err := a.store.exercise(r.PathValue("slug"))
 	if isNotFound(err) {
 		http.NotFound(w, r)
 		return

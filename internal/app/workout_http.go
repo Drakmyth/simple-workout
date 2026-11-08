@@ -25,7 +25,7 @@ type workoutEditPage struct {
 }
 
 func (a *App) workoutList(w http.ResponseWriter, _ *http.Request) {
-	workouts, err := a.workouts()
+	workouts, err := a.store.workouts()
 	if err != nil {
 		a.serverError(w, "load workouts", err)
 		return
@@ -38,7 +38,7 @@ func (a *App) workoutEdit(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	workout, err := a.workout(id)
+	workout, err := a.store.workout(id)
 	if isNotFound(err) {
 		http.NotFound(w, r)
 		return
@@ -47,12 +47,12 @@ func (a *App) workoutEdit(w http.ResponseWriter, r *http.Request) {
 		a.serverError(w, "load workout", err)
 		return
 	}
-	exercises, err := a.exercises()
+	exercises, err := a.store.exercises()
 	if err != nil {
 		a.serverError(w, "load exercises", err)
 		return
 	}
-	unit, err := a.weightUnit()
+	unit, err := a.store.weightUnit()
 	if err != nil {
 		a.serverError(w, "load weight unit", err)
 		return
@@ -74,7 +74,7 @@ func (a *App) workoutEdit(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) workoutRename(w http.ResponseWriter, r *http.Request) {
-	a.workoutAction(w, r, func(id int64) error { return a.renameWorkout(id, r.FormValue("name")) })
+	a.workoutAction(w, r, func(id int64) error { return a.store.renameWorkout(id, r.FormValue("name")) })
 }
 
 func (a *App) workoutExerciseAdd(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +83,7 @@ func (a *App) workoutExerciseAdd(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
-		return a.addWorkoutExercise(id, exerciseID)
+		return a.store.addWorkoutExercise(id, exerciseID)
 	})
 }
 
@@ -109,7 +109,7 @@ func (a *App) workoutExerciseUpdate(w http.ResponseWriter, r *http.Request) {
 			}
 			weight = &parsed
 		}
-		return a.updateWorkoutExercise(id, position, sets, reps, weight)
+		return a.store.updateWorkoutExercise(id, position, sets, reps, weight)
 	})
 }
 
@@ -118,7 +118,7 @@ func (a *App) workoutExerciseRemove(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	a.workoutAction(w, r, func(id int64) error { return a.removeWorkoutExercise(id, position) })
+	a.workoutAction(w, r, func(id int64) error { return a.store.removeWorkoutExercise(id, position) })
 }
 
 func (a *App) workoutExerciseMove(w http.ResponseWriter, r *http.Request) {
@@ -127,7 +127,7 @@ func (a *App) workoutExerciseMove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	direction := map[string]int{"up": -1, "down": 1}[r.FormValue("direction")]
-	a.workoutAction(w, r, func(id int64) error { return a.moveWorkoutExercise(id, position, direction) })
+	a.workoutAction(w, r, func(id int64) error { return a.store.moveWorkoutExercise(id, position, direction) })
 }
 
 func (a *App) workoutAction(w http.ResponseWriter, r *http.Request, action func(int64) error) {

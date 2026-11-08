@@ -38,7 +38,7 @@ func TestWorkoutRenameAndTargetUpdate(t *testing.T) {
 	postWorkoutForm(t, application, "/workouts/1/exercises/0/update", url.Values{
 		"sets": {"3"}, "reps": {"8"}, "weight": {"4.5"},
 	})
-	workout, err := application.workout(1)
+	workout, err := application.store.workout(1)
 	if err != nil {
 		t.Fatalf("workout(1) error = %v", err)
 	}
@@ -53,7 +53,7 @@ func TestWorkoutAddMoveAndRemoveRoutes(t *testing.T) {
 	postWorkoutForm(t, application, "/workouts/1/exercises", url.Values{"exercise_id": {"9"}})
 	postWorkoutForm(t, application, "/workouts/1/exercises/5/move", url.Values{"direction": {"up"}})
 	postWorkoutForm(t, application, "/workouts/1/exercises/4/remove", nil)
-	workout, err := application.workout(1)
+	workout, err := application.store.workout(1)
 	if err != nil || len(workout.Exercises) != 5 || workout.Exercises[4].Slug != "dead-bug" {
 		t.Fatalf("edited workout = (%#v, %v)", workout, err)
 	}
