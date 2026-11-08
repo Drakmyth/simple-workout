@@ -10,7 +10,7 @@
   <main>
     <div class="page-heading"><div><p class="eyebrow">Training plans</p><h1>Workouts</h1></div></div>
     <div class="workout-grid">
-      {{range .Workouts}}<a class="workout-card" href="/workouts/{{.ID}}/edit"><h2>{{.Name}}</h2><p>{{.ExerciseCount}} exercises</p><span>Edit workout</span></a>{{end}}
+      {{range .Workouts}}<article class="workout-card"><h2>{{.Name}}</h2><p>{{.ExerciseCount}} exercises</p><div class="workout-card-actions"><a class="primary-action" href="/workouts/{{.ID}}/start">Start</a><a href="/workouts/{{.ID}}/edit">Edit</a></div></article>{{end}}
     </div>
   </main>
 </body>

@@ -64,6 +64,8 @@ func New(ctx context.Context, config Config) (*App, error) {
 	mux.HandleFunc("POST /workouts/{id}/exercises/{position}/update", application.workoutExerciseUpdate)
 	mux.HandleFunc("POST /workouts/{id}/exercises/{position}/remove", application.workoutExerciseRemove)
 	mux.HandleFunc("POST /workouts/{id}/exercises/{position}/move", application.workoutExerciseMove)
+	mux.HandleFunc("GET /workouts/{id}/start", application.playbackSetup)
+	mux.HandleFunc("POST /workouts/{id}/play", application.playbackStart)
 	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)

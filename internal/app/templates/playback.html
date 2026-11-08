@@ -1,0 +1,24 @@
+{{define "playback.html"}}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#b4232c"><title>{{.Workout.Name}} - Simple Workout</title>
+  <link rel="stylesheet" href="/static/app.css"><script src="/static/app.js" defer></script>
+</head>
+<body class="playback-body">
+  <main class="playback" data-playback data-image-preference="{{.ImagePreference}}">
+    {{range .Slides}}{{if eq .Kind "set"}}<section class="playback-slide" data-slide data-kind="set" data-exercise="{{.ExerciseIndex}}" hidden>
+      <p class="playback-progress">Set {{.CompletedSets}} of {{.TotalSets}}</p><p class="eyebrow">Set {{.SetNumber}} of {{.Exercise.Sets}}</p>
+      <h1>{{.Exercise.Name}}</h1>
+      <p class="set-target">{{.Exercise.Reps}} reps{{if .Exercise.Weight}} at {{.Exercise.Weight}} {{$.Unit}}{{end}}</p>
+      <img class="playback-image" data-male-src="{{(index .Exercise.Images "male").Path}}" data-male-alt="{{(index .Exercise.Images "male").AltText}}" data-female-src="{{(index .Exercise.Images "female").Path}}" data-female-alt="{{(index .Exercise.Images "female").AltText}}" width="1536" height="1024">
+      <section class="card playback-guidance"><h2>Steps</h2><ol>{{range .Exercise.Steps}}<li>{{.}}</li>{{end}}</ol><h2>Keep in mind</h2><p>{{.Exercise.Notes}}</p></section>
+    </section>{{else}}<section class="playback-slide rest-slide" data-slide data-kind="rest" hidden>
+      <p class="playback-progress">{{.CompletedSets}} of {{.TotalSets}} sets complete</p><p class="eyebrow">Recover</p><h1>Rest</h1><p class="rest-duration">{{.RestSeconds}} seconds</p>
+    </section>{{end}}{{end}}
+    <section class="playback-slide completion-slide" data-complete hidden><p class="eyebrow">Workout complete</p><h1>Well done.</h1><p>You completed {{.Workout.Name}}.</p><a class="primary-action" href="/workouts">Back to workouts</a></section>
+    <noscript><section class="card"><h1>JavaScript required</h1><p>Workout playback needs JavaScript to advance between sets.</p></section></noscript>
+  </main>
+  <div class="playback-action" data-playback-action hidden><button type="button" data-playback-next>Next</button></div>
+</body>
+</html>{{end}}

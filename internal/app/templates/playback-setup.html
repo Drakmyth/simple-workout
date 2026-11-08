@@ -1,0 +1,30 @@
+{{define "playback-setup.html"}}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#b4232c"><title>Start {{.Workout.Name}} - Simple Workout</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="site-header"><a class="brand" href="/">Simple Workout</a><nav><a href="/workouts">Workouts</a><a href="/exercises">Exercises</a></nav></header>
+  <main class="playback-setup">
+    <a class="back-link" href="/workouts">Back to workouts</a>
+    <p class="eyebrow">Get ready</p><h1>{{.Workout.Name}}</h1>
+    <form method="post" action="/workouts/{{.Workout.ID}}/play">
+      <section class="card setup-section"><h2>Working weights</h2><p>Adjust today's weights before starting.</p>
+        <div class="weight-list">{{range .Exercises}}<label><span>{{.Name}}</span>{{if .Weight}}<span class="weight-input"><input name="weight" type="number" min="0" step="any" value="{{.Weight}}" required> {{$.Settings.WeightUnit}}</span>{{else}}<input name="weight" type="hidden" value=""><strong>Bodyweight</strong>{{end}}</label>{{end}}</div>
+      </section>
+      <section class="card setup-section"><h2>Playback</h2>
+        <label>Rest between sets<input name="rest_seconds" type="number" min="0" value="{{.Settings.RestSeconds}}" required> seconds</label>
+        <label>Image model<select name="image_preference">
+          <option value="male" {{if eq .Settings.ImagePreference "male"}}selected{{end}}>Male</option>
+          <option value="female" {{if eq .Settings.ImagePreference "female"}}selected{{end}}>Female</option>
+          <option value="alternating" {{if eq .Settings.ImagePreference "alternating"}}selected{{end}}>Alternating</option>
+          <option value="random" {{if eq .Settings.ImagePreference "random"}}selected{{end}}>Random</option>
+        </select></label>
+      </section>
+      <button class="start-workout" type="submit">Start workout</button>
+    </form>
+  </main>
+</body>
+</html>{{end}}
