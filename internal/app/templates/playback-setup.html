@@ -12,7 +12,7 @@
     <p class="eyebrow">Get ready</p><h1>{{.Workout.Name}}</h1>
     <form method="post" action="/workouts/{{.Workout.ID}}/play">
       <section class="card setup-section"><h2>Working weights</h2><p>Adjust today's weights before starting.</p>
-        <div class="weight-list">{{range .Exercises}}<label><span>{{.Name}}</span>{{if .Weight}}<span class="weight-input"><input name="weight" type="number" min="0" step="any" value="{{.Weight}}" required> {{$.Settings.WeightUnit}}</span>{{else}}<input name="weight" type="hidden" value=""><strong>Bodyweight</strong>{{end}}</label>{{end}}</div>
+        <div class="weight-list">{{range .Exercises}}<label><span>{{.Name}}</span><span class="weight-input"><input name="weight" type="number" min="0" step="any" value="{{.Weight}}" placeholder="Bodyweight"> {{$.Settings.WeightUnit}}</span></label>{{end}}</div>
       </section>
       <section class="card setup-section"><h2>Playback</h2>
         <label>Rest between sets<input name="rest_seconds" type="number" min="0" value="{{.Settings.RestSeconds}}" required> seconds</label>

@@ -8,7 +8,9 @@ import (
 
 type playbackExerciseView struct {
 	PlaybackExercise
-	Weight string
+	Weight  string
+	Variant string
+	Image   ExerciseImage
 }
 
 type playbackSetupPage struct {
@@ -19,6 +21,7 @@ type playbackSetupPage struct {
 
 type playbackSlide struct {
 	Kind          string
+	Unit          string
 	Exercise      playbackExerciseView
 	ExerciseIndex int
 	SetNumber     int
@@ -30,8 +33,13 @@ type playbackSlide struct {
 type playbackPage struct {
 	Workout         PlaybackWorkout
 	Slides          []playbackSlide
+	Current         *playbackSlide
+	Exercises       []playbackExerciseView
+	Step            int
+	NextStep        int
+	Complete        bool
+	RestSeconds     int
 	ImagePreference string
-	Unit            string
 }
 
 func (a *App) playbackSetup(w http.ResponseWriter, r *http.Request) {
@@ -79,6 +87,9 @@ func (a *App) playbackStart(w http.ResponseWriter, r *http.Request) {
 	restSeconds, err := strconv.Atoi(r.FormValue("rest_seconds"))
 	preference := r.FormValue("image_preference")
 	views, err := parsePlaybackWeights(workout.Exercises, r.Form["weight"])
+	if err == nil {
+		err = assignPlaybackVariants(views, preference, r.Form["variant"])
+	}
 	if err != nil || restSeconds < 0 || !validImagePreference(preference) {
 		http.Error(w, "Invalid playback setup", http.StatusBadRequest)
 		return
@@ -92,9 +103,21 @@ func (a *App) playbackStart(w http.ResponseWriter, r *http.Request) {
 		a.serverError(w, "load weight unit", err)
 		return
 	}
-	a.render(w, "playback.html", playbackPage{
-		Workout: workout, Slides: buildPlaybackSlides(views, restSeconds), ImagePreference: preference, Unit: unit,
-	})
+	step := 0
+	if value := r.FormValue("step"); value != "" {
+		step, err = strconv.Atoi(value)
+	}
+	slides := buildPlaybackSlides(views, restSeconds, unit)
+	if err != nil || step < 0 || step > len(slides) {
+		http.Error(w, "Invalid playback step", http.StatusBadRequest)
+		return
+	}
+	page := playbackPage{Workout: workout, Slides: slides, Exercises: views, Step: step, NextStep: step + 1,
+		Complete: step == len(slides), RestSeconds: restSeconds, ImagePreference: preference}
+	if !page.Complete {
+		page.Current = &slides[step]
+	}
+	a.render(w, "playback.html", page)
 }
 
 func playbackExerciseViews(exercises []PlaybackExercise) []playbackExerciseView {
@@ -128,7 +151,32 @@ func parsePlaybackWeights(exercises []PlaybackExercise, values []string) ([]play
 	return views, nil
 }
 
-func buildPlaybackSlides(exercises []playbackExerciseView, restSeconds int) []playbackSlide {
+func assignPlaybackVariants(exercises []playbackExerciseView, preference string, submitted []string) error {
+	if len(submitted) > 0 && len(submitted) != len(exercises) {
+		return strconv.ErrSyntax
+	}
+	next := ""
+	for index := range exercises {
+		variant := ""
+		if len(submitted) > 0 {
+			variant = submitted[index]
+			if variant != imageMale && variant != imageFemale {
+				return strconv.ErrSyntax
+			}
+		} else {
+			var err error
+			variant, next, err = selectImageVariant(preference, next)
+			if err != nil {
+				return err
+			}
+		}
+		exercises[index].Variant = variant
+		exercises[index].Image = exercises[index].Images[variant]
+	}
+	return nil
+}
+
+func buildPlaybackSlides(exercises []playbackExerciseView, restSeconds int, unit string) []playbackSlide {
 	totalSets := 0
 	for _, exercise := range exercises {
 		totalSets += exercise.Sets
@@ -138,10 +186,10 @@ func buildPlaybackSlides(exercises []playbackExerciseView, restSeconds int) []pl
 	for exerciseIndex, exercise := range exercises {
 		for set := 1; set <= exercise.Sets; set++ {
 			completed++
-			slides = append(slides, playbackSlide{Kind: "set", Exercise: exercise, ExerciseIndex: exerciseIndex,
+			slides = append(slides, playbackSlide{Kind: "set", Unit: unit, Exercise: exercise, ExerciseIndex: exerciseIndex,
 				SetNumber: set, CompletedSets: completed, TotalSets: totalSets})
 			if completed < totalSets {
-				slides = append(slides, playbackSlide{Kind: "rest", RestSeconds: restSeconds,
+				slides = append(slides, playbackSlide{Kind: "rest", Unit: unit, RestSeconds: restSeconds,
 					CompletedSets: completed, TotalSets: totalSets})
 			}
 		}
