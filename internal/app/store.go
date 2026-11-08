@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"io/fs"
 	"path/filepath"
@@ -32,6 +33,10 @@ func newStore(ctx context.Context, dataDir string) (*Store, error) {
 
 func (s *Store) Close() error {
 	return s.db.Close()
+}
+
+func isNotFound(err error) bool {
+	return errors.Is(err, sql.ErrNoRows)
 }
 
 func (s *Store) initialize(ctx context.Context) error {

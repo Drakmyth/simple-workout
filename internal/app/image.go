@@ -2,8 +2,6 @@ package app
 
 import (
 	"crypto/rand"
-	"database/sql"
-	"errors"
 	"fmt"
 	"io"
 )
@@ -14,20 +12,6 @@ const (
 	imageRandom      = "random"
 	imageAlternating = "alternating"
 )
-
-type Exercise struct {
-	ID     int64
-	Slug   string
-	Name   string
-	Notes  string
-	Steps  []string
-	Images map[string]ExerciseImage
-}
-
-type ExerciseImage struct {
-	Path    string
-	AltText string
-}
 
 func validImagePreference(preference string) bool {
 	switch preference {
@@ -63,8 +47,4 @@ func randomImageVariant(source io.Reader) (variant, next string, err error) {
 		return imageMale, "", nil
 	}
 	return imageFemale, "", nil
-}
-
-func isNotFound(err error) bool {
-	return errors.Is(err, sql.ErrNoRows)
 }
