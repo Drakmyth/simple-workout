@@ -8,23 +8,24 @@
 <body class="playback-body">
   <main class="playback" data-playback data-image-preference="{{.ImagePreference}}">
     <div class="js-playback">{{range .Slides}}<section class="playback-slide" data-slide data-kind="{{.Kind}}" {{if eq .Kind "set"}}data-exercise="{{.ExerciseIndex}}"{{end}} hidden>{{template "playback-slide" .}}</section>{{end}}
-      <section class="playback-slide completion-slide" data-complete hidden>{{template "playback-complete" .Workout}}</section>
+      <section class="playback-slide completion-slide" data-complete hidden>{{template "playback-complete" .}}</section>
     </div>
-    <noscript>{{if .Complete}}<section class="playback-slide completion-slide">{{template "playback-complete" .Workout}}</section>{{else}}<section class="playback-slide">{{template "playback-slide" .Current}}</section>
+    <noscript>{{if .Complete}}<section class="playback-slide completion-slide">{{template "playback-complete" .}}</section>{{else}}<section class="playback-slide">{{template "playback-slide" .Current}}</section>
       <form class="playback-action" method="post" action="/workouts/{{.Workout.ID}}/play">
-        <input type="hidden" name="step" value="{{.NextStep}}"><input type="hidden" name="rest_seconds" value="{{.RestSeconds}}"><input type="hidden" name="image_preference" value="{{.ImagePreference}}">
+        <input type="hidden" name="step" value="{{.NextStep}}"><input type="hidden" name="rest_seconds" value="{{.RestSeconds}}"><input type="hidden" name="image_preference" value="{{.ImagePreference}}">{{if .SaveWeights}}<input type="hidden" name="save_weights" value="true">{{end}}
         {{range .Exercises}}<input type="hidden" name="weight" value="{{.Weight}}"><input type="hidden" name="variant" value="{{.Variant}}">{{end}}<button type="submit">Next</button>
       </form>{{end}}</noscript>
+    {{if .SaveWeights}}<form data-completion-form action="/workouts/{{.Workout.ID}}/complete" method="post" hidden>{{range .Exercises}}<input type="hidden" name="weight" value="{{.Weight}}">{{end}}</form>{{end}}
   </main>
   <div class="playback-action" data-playback-action hidden><button type="button" data-playback-next>Next</button></div>
 </body>
 </html>{{end}}
 
 {{define "playback-slide"}}{{if eq .Kind "set"}}
-  <p class="playback-progress">Set {{.CompletedSets}} of {{.TotalSets}}</p><p class="eyebrow">Set {{.SetNumber}} of {{.Exercise.Sets}}</p><h1>{{.Exercise.Name}}</h1>
+  <p class="playback-progress">Set {{.CompletedSets}} of {{.TotalSets}}</p><p class="eyebrow">Set {{.SetNumber}} of {{.Exercise.Sets}}</p><h1 tabindex="-1">{{.Exercise.Name}}</h1>
   <p class="set-target">{{.Exercise.Reps}} reps{{if .Exercise.Weight}} at {{.Exercise.Weight}} {{.Unit}}{{end}}</p>
   <img class="playback-image" src="{{.Exercise.Image.Path}}" alt="{{.Exercise.Image.AltText}}" data-male-src="{{(index .Exercise.Images "male").Path}}" data-male-alt="{{(index .Exercise.Images "male").AltText}}" data-female-src="{{(index .Exercise.Images "female").Path}}" data-female-alt="{{(index .Exercise.Images "female").AltText}}" width="1536" height="1024">
   <section class="card playback-guidance"><h2>Steps</h2><ol>{{range .Exercise.Steps}}<li>{{.}}</li>{{end}}</ol><h2>Keep in mind</h2><p>{{.Exercise.Notes}}</p></section>
-{{else}}<p class="playback-progress">{{.CompletedSets}} of {{.TotalSets}} sets complete</p><p class="eyebrow">Recover</p><h1>Rest</h1><p class="rest-duration">{{.RestSeconds}} seconds</p>{{end}}{{end}}
+{{else}}<p class="playback-progress">{{.CompletedSets}} of {{.TotalSets}} sets complete</p><p class="eyebrow">Recover</p><h1 tabindex="-1">Rest</h1><p class="rest-duration" data-rest-timer data-rest-seconds="{{.RestSeconds}}" aria-live="polite">{{.RestSeconds}} seconds</p>{{end}}{{end}}
 
-{{define "playback-complete"}}<p class="eyebrow">Workout complete</p><h1>Well done.</h1><p>You completed {{.Name}}.</p><a class="primary-action" href="/workouts">Back to workouts</a>{{end}}
+{{define "playback-complete"}}<p class="eyebrow">Workout complete</p><h1 tabindex="-1">Well done.</h1><p>You completed {{.Workout.Name}}.</p>{{if .SavedWeights}}<p>Working weights saved.</p>{{else if .SaveWeights}}<p data-completion-status>Saving working weights...</p>{{end}}<a class="primary-action" data-completion-exit href="/workouts" {{if and .SaveWeights (not .SavedWeights)}}hidden{{end}}>Back to workouts</a>{{end}}
