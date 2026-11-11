@@ -13,8 +13,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    name: Test
+  workflow-lint:
+    name: Workflow Lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Lint workflows
+        run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12
+
+  build-test:
+    name: Build and Test
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -31,6 +41,14 @@ jobs:
         run: go vet ./...
       - name: Build
         run: go build ./cmd/simple-workout
+
+  container:
+    name: Container
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
       - name: Validate Compose
         run: docker compose config --quiet
       - name: Build container
