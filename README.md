@@ -50,11 +50,26 @@ Runtime data is stored in the `workout-data` volume.
 
 PWA installation requires a secure context. Localhost works during development; LAN devices should access the app through an HTTPS reverse proxy. The service worker intentionally does not cache application responses, so the installed app still requires network access.
 
+Before a release, verify the deployed PWA on a target device:
+
+1. Open the HTTPS URL and install the app.
+2. Confirm the app launches in a standalone window with the correct icon.
+3. Complete a workout and confirm the rest timer, Next actions, and optional weight saving.
+4. Restart the container and confirm workout changes persist.
+5. Disconnect the network and confirm the expected network-dependent failure.
+
 ### Reverse proxies
 
 The application serves plain HTTP on container port 8080 and does not manage TLS. A reverse proxy can reach it through the published host port or by sharing its Docker network. Configure the proxy to forward requests without changing their path and to provide HTTPS externally.
 
 When the proxy shares the Docker network, it should route to service `app` on port 8080. The published host port can remain bound to `127.0.0.1` for local diagnostics.
+
+## Known limitations
+
+- The application is single-user and does not provide authentication; deploy it only on a trusted network or behind external access controls.
+- It must be hosted at the origin root and does not support a configurable URL base path.
+- The installed PWA requires a network connection.
+- Active workouts cannot be resumed after closing the page, and completed workouts are not recorded as history.
 
 ## License
 
