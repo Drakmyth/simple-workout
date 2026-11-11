@@ -64,11 +64,11 @@ jobs:
           PACKAGE="simple-workout-${{ steps.read_version.outputs.version }}"
           mkdir -p "dist/$PACKAGE"
           cp -r cmd internal "dist/$PACKAGE/"
-          cp .dockerignore Dockerfile LICENSE README.md VERSION compose.yaml go.mod go.sum "dist/$PACKAGE/"
+          cp .dockerignore .env.example Dockerfile LICENSE README.md VERSION go.mod go.sum "dist/$PACKAGE/"
           sed \
-            -e "s/^SIMPLE_WORKOUT_VERSION=.*/SIMPLE_WORKOUT_VERSION=${{ steps.read_version.outputs.version }}/" \
-            -e "s/^SIMPLE_WORKOUT_VCS_REF=.*/SIMPLE_WORKOUT_VCS_REF=$GITHUB_SHA/" \
-            .env.example > "dist/$PACKAGE/.env.example"
+            -e "s/\${SIMPLE_WORKOUT_VERSION:-dev}/${{ steps.read_version.outputs.version }}/" \
+            -e "s/\${SIMPLE_WORKOUT_VCS_REF:-unknown}/$GITHUB_SHA/" \
+            compose.yaml > "dist/$PACKAGE/compose.yaml"
           docker compose -f "dist/$PACKAGE/compose.yaml" --env-file "dist/$PACKAGE/.env.example" config --quiet
           (cd dist && zip -qr "$PACKAGE.zip" "$PACKAGE")
           rm -rf "dist/$PACKAGE"
