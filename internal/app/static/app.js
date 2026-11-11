@@ -5,7 +5,6 @@ document.querySelectorAll("[data-auto-submit]").forEach((form) => {
 
 const playback = document.querySelector("[data-playback]");
 if (playback) {
-  playback.querySelector("h1")?.focus();
   const display = playback.querySelector("[data-rest-timer]");
   if (display) {
     let remaining = Number(display.dataset.restSeconds);

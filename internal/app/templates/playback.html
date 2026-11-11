@@ -18,10 +18,10 @@
 </html>{{end}}
 
 {{define "playback-slide"}}{{if eq .Kind "set"}}
-  <p class="playback-progress">Set {{.CompletedSets}} of {{.TotalSets}}</p><p class="eyebrow">Set {{.SetNumber}} of {{.Exercise.Sets}}</p><h1 tabindex="-1">{{.Exercise.Name}}</h1>
+  <p class="playback-progress">Set {{.CompletedSets}} of {{.TotalSets}}</p><p class="eyebrow">Set {{.SetNumber}} of {{.Exercise.Sets}}</p><h1>{{.Exercise.Name}}</h1>
   <p class="set-target">{{.Exercise.Reps}} reps{{if .Exercise.Weight}} at {{.Exercise.Weight}} {{.Unit}}{{end}}</p>
   <img class="playback-image" src="{{.Exercise.Image.Path}}" alt="{{.Exercise.Image.AltText}}" width="1536" height="1024">
   <section class="card playback-guidance"><h2>Steps</h2><ol>{{range .Exercise.Steps}}<li>{{.}}</li>{{end}}</ol><h2>Keep in mind</h2><p>{{.Exercise.Notes}}</p></section>
-{{else}}<p class="playback-progress">{{.CompletedSets}} of {{.TotalSets}} sets complete</p><p class="eyebrow">Recover</p><h1 tabindex="-1">Rest</h1><p class="rest-duration" data-rest-timer data-rest-seconds="{{.RestSeconds}}" aria-live="polite">{{.RestSeconds}} seconds</p>{{end}}{{end}}
+{{else}}<p class="playback-progress">{{.CompletedSets}} of {{.TotalSets}} sets complete</p><p class="eyebrow">Recover</p><h1>Rest</h1><p class="rest-duration" data-rest-timer data-rest-seconds="{{.RestSeconds}}" aria-live="polite">{{.RestSeconds}} seconds</p>{{end}}{{end}}
 
-{{define "playback-complete"}}<p class="eyebrow">Workout complete</p><h1 tabindex="-1">Well done.</h1><p>You completed {{.Workout.Name}}.</p>{{if eq .WeightSaveStatus "done"}}<p>Working weights saved.</p>{{end}}<a class="primary-action" href="/workouts">Back to workouts</a>{{end}}
+{{define "playback-complete"}}<p class="eyebrow">Workout complete</p><h1>Well done.</h1><p>You completed {{.Workout.Name}}.</p>{{if eq .WeightSaveStatus "done"}}<p>Working weights saved.</p>{{end}}<a class="primary-action" href="/workouts">Back to workouts</a>{{end}}
