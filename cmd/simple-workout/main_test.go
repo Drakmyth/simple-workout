@@ -2,6 +2,12 @@ package main
 
 import "testing"
 
+func TestDevelopmentVersion(t *testing.T) {
+	if version != "dev" {
+		t.Fatalf("version = %q, want dev", version)
+	}
+}
+
 func TestEnvOrDefault(t *testing.T) {
 	t.Setenv("SIMPLE_WORKOUT_TEST_VALUE", "configured")
 	if got := envOrDefault("SIMPLE_WORKOUT_TEST_VALUE", "fallback"); got != "configured" {

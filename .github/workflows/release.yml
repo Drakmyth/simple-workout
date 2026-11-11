@@ -1,0 +1,149 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish-to-github:
+        description: Create or update the GitHub release?
+        required: false
+        default: true
+        type: boolean
+      publish-to-ghcr:
+        description: Publish the container image to GHCR?
+        required: false
+        default: true
+        type: boolean
+      simulate:
+        description: Validate and package without publishing?
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  packages: write
+
+defaults:
+  run:
+    shell: bash -e -o pipefail {0}
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      minor: ${{ steps.version.outputs.minor }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Read version
+        id: version
+        run: |
+          if [[ "${{ inputs.simulate }}" != "true" && "$GITHUB_REF" != "refs/heads/master" ]]; then
+            echo "Releases must be published from master" >&2
+            exit 1
+          fi
+          VERSION=$(tr -d '[:space:]' < VERSION)
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "VERSION must contain a semantic version such as 0.2.0" >&2
+            exit 1
+          fi
+          {
+            echo "version=$VERSION"
+            echo "minor=${VERSION%.*}"
+            echo "tag=v$VERSION"
+          } >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: go test ./...
+      - run: go vet ./...
+      - run: go build ./cmd/simple-workout
+      - run: docker compose config --quiet
+      - name: Generate release deployment
+        run: |
+          mkdir -p dist
+          sed "s/{{VERSION}}/${{ steps.version.outputs.version }}/g" release/compose.yaml.template > dist/compose.yaml
+          cp .env.example dist/.env.example
+          docker compose -f dist/compose.yaml config --quiet
+      - uses: actions/upload-artifact@v7
+        with:
+          name: deployment
+          path: dist/
+          include-hidden-files: true
+
+  tag:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    needs: [prepare]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Create tag
+        if: ${{ !inputs.simulate && (inputs.publish-to-github || inputs.publish-to-ghcr) }}
+        run: |
+          TAG=${{ needs.prepare.outputs.tag }}
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            if [[ "$(git rev-list -n 1 "$TAG")" != "$GITHUB_SHA" ]]; then
+              echo "$TAG already exists at a different commit" >&2
+              exit 1
+            fi
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG"
+          git push origin "$TAG"
+
+  image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    needs: [prepare, tag]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        if: ${{ !inputs.simulate && inputs.publish-to-ghcr }}
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: ${{ !inputs.simulate && inputs.publish-to-ghcr }}
+          build-args: |
+            VERSION=${{ needs.prepare.outputs.version }}
+            VCS_REF=${{ github.sha }}
+          tags: |
+            ghcr.io/drakmyth/simple-workout:${{ needs.prepare.outputs.version }}
+            ghcr.io/drakmyth/simple-workout:${{ needs.prepare.outputs.minor }}
+            ghcr.io/drakmyth/simple-workout:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs: [prepare, image]
+    if: ${{ !inputs.simulate && inputs.publish-to-github }}
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: deployment
+          path: deployment
+      - name: Create or update GitHub release
+        run: |
+          TAG=${{ needs.prepare.outputs.tag }}
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" deployment/compose.yaml deployment/.env.example --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" deployment/compose.yaml deployment/.env.example \
+              --generate-notes --verify-tag --title "Simple Workout $TAG" --repo "$GITHUB_REPOSITORY"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

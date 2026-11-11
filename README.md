@@ -36,7 +36,9 @@ go build ./cmd/simple-workout
 
 ## Docker
 
-Build and run the application:
+### Source builds
+
+Build and run the application from a source checkout:
 
 ```sh
 docker compose up --build
@@ -45,6 +47,16 @@ docker compose up --build
 By default, the app is available at <http://localhost:8080>. Copy `.env.example` to `.env` to change the bind address or port. Set `HTTP_BIND_ADDRESS=0.0.0.0` to allow direct access from other LAN devices; the app does not yet provide authentication.
 
 Runtime data is stored in the `workout-data` volume.
+
+### Released images
+
+Automated releases publish AMD64 and ARM64 images to `ghcr.io/drakmyth/simple-workout` and attach a version-pinned `compose.yaml` plus `.env.example` to the GitHub release. Download those two files into one directory, optionally customize `.env`, and run:
+
+```sh
+docker compose up -d
+```
+
+The GitHub Container Registry package must be public for deployment without registry credentials.
 
 ### PWA installation
 
@@ -63,6 +75,12 @@ Before a release, verify the deployed PWA on a target device:
 The application serves plain HTTP on container port 8080 and does not manage TLS. A reverse proxy can reach it through the published host port or by sharing its Docker network. Configure the proxy to forward requests without changing their path and to provide HTTPS externally.
 
 When the proxy shares the Docker network, it should route to service `app` on port 8080. The published host port can remain bound to `127.0.0.1` for local diagnostics.
+
+## Releases
+
+`VERSION` is the authoritative release version. Development builds report version `dev`; the release workflow injects `VERSION` into the application binary and container metadata.
+
+After a version change reaches `master`, run the **Release** workflow from GitHub Actions. Simulation mode validates the release, generates deployment files, and builds both container architectures without creating a tag, pushing an image, or publishing a GitHub release.
 
 ## Known limitations
 

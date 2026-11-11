@@ -13,6 +13,8 @@ import (
 	"github.com/Drakmyth/simple-workout/internal/app"
 )
 
+var version = "dev"
+
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	application, err := app.New(context.Background(), app.Config{
@@ -44,7 +46,7 @@ func main() {
 		}
 	}()
 
-	logger.Info("server listening", "address", address)
+	logger.Info("server listening", "address", address, "version", version)
 	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		logger.Error("server failed", "error", err)
 		os.Exit(1)
