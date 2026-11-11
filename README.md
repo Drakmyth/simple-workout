@@ -57,7 +57,7 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-The package contains only the application source and files required for Docker deployment. Automated releases also publish AMD64 and ARM64 images to `ghcr.io/drakmyth/simple-workout` for deployments that use a container registry. The GitHub Container Registry package must be public for use without registry credentials.
+The package contains only the application source and files required for Docker deployment. Automated releases also publish AMD64 and ARM64 images to `ghcr.io/drakmyth/simple-workout` for deployments that use a container registry.
 
 ### PWA installation
 
