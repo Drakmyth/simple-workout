@@ -13,6 +13,7 @@ import (
 	"github.com/Drakmyth/simple-workout/internal/app"
 )
 
+// version is set for release builds with go build -ldflags="-X main.version=<version>".
 var version = "dev"
 
 func main() {
