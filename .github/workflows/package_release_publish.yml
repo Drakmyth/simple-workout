@@ -66,8 +66,8 @@ jobs:
           cp -r cmd internal "dist/$PACKAGE/"
           cp .dockerignore .env.example Dockerfile LICENSE README.md VERSION go.mod go.sum "dist/$PACKAGE/"
           sed \
-            -e "s/\${SIMPLE_WORKOUT_VERSION:-dev}/${{ steps.read_version.outputs.version }}/" \
-            -e "s/\${SIMPLE_WORKOUT_VCS_REF:-unknown}/$GITHUB_SHA/" \
+            -e "s/VERSION: dev/VERSION: ${{ steps.read_version.outputs.version }}/" \
+            -e "s/VCS_REF: unknown/VCS_REF: $GITHUB_SHA/" \
             compose.yaml > "dist/$PACKAGE/compose.yaml"
           docker compose -f "dist/$PACKAGE/compose.yaml" --env-file "dist/$PACKAGE/.env.example" config --quiet
           (cd dist && zip -qr "$PACKAGE.zip" "$PACKAGE")

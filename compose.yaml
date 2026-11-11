@@ -3,8 +3,8 @@ services:
     build:
       context: .
       args:
-        VERSION: ${SIMPLE_WORKOUT_VERSION:-dev}
-        VCS_REF: ${SIMPLE_WORKOUT_VCS_REF:-unknown}
+        VERSION: dev
+        VCS_REF: unknown
     environment:
       LISTEN_ADDRESS: :8080
       DATA_DIR: /data
