@@ -89,15 +89,15 @@ jobs:
   release:
     runs-on: ubuntu-24.04
     needs: [package]
+    if: ${{ inputs.publish-to-github }}
     steps:
       - name: Download package
         uses: actions/download-artifact@v8
-        if: ${{ !inputs.simulate && inputs.publish-to-github }}
         with:
           name: package
 
       - name: Create GitHub release
-        if: ${{ !inputs.simulate && inputs.publish-to-github }}
+        if: ${{ !inputs.simulate }}
         run: |
           gh release create "v${{ needs.package.outputs.version }}" \
             "simple-workout-${{ needs.package.outputs.version }}.zip" \
@@ -110,6 +110,7 @@ jobs:
   publish-ghcr:
     runs-on: ubuntu-24.04
     needs: [package]
+    if: ${{ inputs.publish-to-ghcr }}
     steps:
       - uses: actions/checkout@v7
 
