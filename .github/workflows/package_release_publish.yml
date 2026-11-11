@@ -8,12 +8,12 @@ on:
   workflow_dispatch:
     inputs:
       publish-to-github:
-        description: Create GitHub Release?
+        description: Create a GitHub release?
         required: false
         default: true
         type: boolean
       publish-to-ghcr:
-        description: Publish release to GHCR?
+        description: Publish the release to GHCR?
         required: false
         default: true
         type: boolean
@@ -29,6 +29,7 @@ defaults:
 
 jobs:
   package:
+    name: Package
     runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.read_version.outputs.version }}
@@ -89,6 +90,7 @@ jobs:
           path: dist/simple-workout-${{ steps.read_version.outputs.version }}.zip
 
   release:
+    name: Release
     runs-on: ubuntu-24.04
     needs: [package]
     if: ${{ inputs.publish-to-github }}
@@ -110,6 +112,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-ghcr:
+    name: Publish GHCR
     runs-on: ubuntu-24.04
     needs: [package]
     if: ${{ inputs.publish-to-ghcr }}
