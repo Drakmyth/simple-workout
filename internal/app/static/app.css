@@ -272,6 +272,8 @@ button.danger { color: #8f1d25; background: #fff; border-color: #d8aeb1; }
 .setup-section h2 { margin: 0; }
 .setup-section > p { color: #62666b; }
 .setup-section > label { display: grid; gap: 0.4rem; margin-top: 1rem; font-weight: 700; }
+.setup-section .checkbox-label { display: flex; align-items: center; }
+.checkbox-label input { width: auto; }
 .weight-list label { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .weight-input { display: flex; align-items: center; gap: 0.4rem; }
 .weight-input input { width: 6rem; }
@@ -280,6 +282,7 @@ button.danger { color: #8f1d25; background: #fff; border-color: #d8aeb1; }
 .playback-body { padding-bottom: 5.5rem; background: #f4f5f6; }
 .playback { width: min(100% - 2rem, 48rem); margin: 0 auto; padding: 1.25rem 0; }
 .playback-progress { margin: 0 0 1.5rem; color: #62666b; font-weight: 700; }
+.playback-slide h1:focus { outline: none; }
 .set-target { margin: 0.75rem 0 1rem; color: #8f1d25; font-size: 1.15rem; font-weight: 750; }
 .playback-image { display: block; width: 100%; height: auto; border: 1px solid #dfe1e3; border-radius: 0.75rem; }
 .playback-guidance { margin-top: 1rem; padding: 1.25rem; }

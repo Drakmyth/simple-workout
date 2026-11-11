@@ -11,6 +11,8 @@ if (playback) {
   const nextButton = action.querySelector("[data-playback-next]");
   const choices = new Map();
   let index = 0;
+  let timer;
+  let completionSent = false;
 
   const chooseVariant = (exercise) => {
     if (choices.has(exercise)) return choices.get(exercise);
@@ -27,11 +29,36 @@ if (playback) {
     return variant;
   };
 
+  const saveCompletion = async () => {
+    const form = playback.querySelector("[data-completion-form]");
+    if (!form || completionSent) return;
+    completionSent = true;
+    const status = completion.querySelector("[data-completion-status]");
+    try {
+      const response = await fetch(form.action, { method: "POST", body: new FormData(form) });
+      if (!response.ok) throw new Error("save failed");
+      status.textContent = "Working weights saved.";
+    } catch {
+      status.textContent = "Working weights were not saved.";
+    } finally {
+      completion.querySelector("[data-completion-exit]").hidden = false;
+    }
+  };
+
+  const advance = () => {
+    clearInterval(timer);
+    index += 1;
+    show();
+  };
+
   const show = () => {
+    clearInterval(timer);
     slides.forEach((slide) => slide.hidden = true);
     if (index >= slides.length) {
       completion.hidden = false;
       action.hidden = true;
+      completion.querySelector("h1").focus();
+      saveCompletion();
       window.scrollTo({ top: 0 });
       return;
     }
@@ -42,12 +69,26 @@ if (playback) {
       const image = slide.querySelector(".playback-image");
       image.src = image.dataset[`${variant}Src`];
       image.alt = image.dataset[`${variant}Alt`];
+      nextButton.textContent = index === slides.length - 1 ? "Finish" : "Next";
+    } else {
+      nextButton.textContent = "Skip rest";
+      const display = slide.querySelector("[data-rest-timer]");
+      let remaining = Number(display.dataset.restSeconds);
+      if (remaining <= 0) nextButton.textContent = "Next";
+      else timer = setInterval(() => {
+        remaining -= 1;
+        display.textContent = `${remaining} ${remaining === 1 ? "second" : "seconds"}`;
+        if (remaining <= 0) {
+          clearInterval(timer);
+          nextButton.textContent = "Next";
+        }
+      }, 1000);
     }
-    nextButton.textContent = index === slides.length - 1 ? "Finish" : "Next";
     action.hidden = false;
+    slide.querySelector("h1").focus();
     window.scrollTo({ top: 0 });
   };
 
-  nextButton.addEventListener("click", () => { index += 1; show(); });
+  nextButton.addEventListener("click", advance);
   show();
 }

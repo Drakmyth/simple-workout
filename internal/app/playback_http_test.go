@@ -69,6 +69,42 @@ func TestPlaybackAdvancesWithoutJavaScript(t *testing.T) {
 	}
 }
 
+func TestPlaybackCompleteSavesWeights(t *testing.T) {
+	application := newTestApp(t)
+	form := url.Values{"weight": {"4", "5", "6", "7", ""}}
+	request := httptest.NewRequest(http.MethodPost, "/workouts/1/complete", strings.NewReader(form.Encode()))
+	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	response := httptest.NewRecorder()
+	application.Handler().ServeHTTP(response, request)
+	if response.Code != http.StatusNoContent {
+		t.Fatalf("status = %d, want %d", response.Code, http.StatusNoContent)
+	}
+	workout, err := application.store.workout(1)
+	if err != nil || workout.Exercises[0].Weight == nil || *workout.Exercises[0].Weight != 4 || workout.Exercises[4].Weight != nil {
+		t.Fatalf("saved workout = (%#v, %v)", workout, err)
+	}
+}
+
+func TestPlaybackCompletionWithoutJavaScriptSavesWeights(t *testing.T) {
+	application := newTestApp(t)
+	form := url.Values{
+		"step": {"19"}, "rest_seconds": {"60"}, "image_preference": {imageMale}, "save_weights": {"true"},
+		"weight":  {"8", "7", "6", "5", ""},
+		"variant": {imageMale, imageMale, imageMale, imageMale, imageMale},
+	}
+	request := httptest.NewRequest(http.MethodPost, "/workouts/1/play", strings.NewReader(form.Encode()))
+	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	response := httptest.NewRecorder()
+	application.Handler().ServeHTTP(response, request)
+	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), "Working weights saved.") {
+		t.Fatalf("completion response = (%d, %q)", response.Code, response.Body.String())
+	}
+	workout, err := application.store.workout(1)
+	if err != nil || workout.Exercises[0].Weight == nil || *workout.Exercises[0].Weight != 8 {
+		t.Fatalf("saved workout = (%#v, %v)", workout, err)
+	}
+}
+
 func TestPlaybackUsesOneExerciseIndexAcrossSets(t *testing.T) {
 	exercises := []playbackExerciseView{
 		{PlaybackExercise: PlaybackExercise{Name: "First", Sets: 2}},
