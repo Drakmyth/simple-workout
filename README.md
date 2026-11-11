@@ -80,7 +80,7 @@ When the proxy shares the Docker network, it should route to service `app` on po
 
 `VERSION` is the authoritative release version. Development builds report version `dev`; the release workflow injects `VERSION` into the application binary and container metadata.
 
-After a version change reaches `master`, run the **Release** workflow from GitHub Actions. Simulation mode validates the release, generates deployment files, and builds both container architectures without creating a tag, pushing an image, or publishing a GitHub release.
+After a version change reaches `master`, run the **Package Release Publish** workflow from GitHub Actions. Simulation mode validates the release, generates deployment files, and builds both container architectures without creating a tag, pushing an image, or publishing a GitHub release.
 
 ## Known limitations
 
