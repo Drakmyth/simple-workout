@@ -31,12 +31,12 @@ jobs:
   package:
     runs-on: ubuntu-24.04
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      version: ${{ steps.read_version.outputs.version }}
     steps:
       - uses: actions/checkout@v7
 
       - name: Read version
-        id: version
+        id: read_version
         run: |
           VERSION=$(tr -d '[:space:]' < VERSION)
           if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -59,10 +59,10 @@ jobs:
       - name: Build
         run: go build ./cmd/simple-workout
 
-      - name: Generate release deployment
+      - name: Package release
         run: |
           mkdir -p dist
-          sed "s/{{VERSION}}/${{ steps.version.outputs.version }}/g" release/compose.yaml.template > dist/compose.yaml
+          sed "s/{{VERSION}}/${{ steps.read_version.outputs.version }}/g" release/compose.yaml.template > dist/compose.yaml
           cp .env.example dist/.env.example
           docker compose -f dist/compose.yaml config --quiet
 
@@ -71,8 +71,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "v${{ steps.version.outputs.version }}"
-          git push origin "v${{ steps.version.outputs.version }}"
+          git tag "v${{ steps.read_version.outputs.version }}"
+          git push origin "v${{ steps.read_version.outputs.version }}"
 
       - name: Upload package
         uses: actions/upload-artifact@v7
