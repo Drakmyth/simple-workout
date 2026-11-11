@@ -71,7 +71,6 @@ jobs:
             compose.yaml > "dist/$PACKAGE/compose.yaml"
           docker compose -f "dist/$PACKAGE/compose.yaml" --env-file "dist/$PACKAGE/.env.example" config --quiet
           (cd dist && zip -qr "$PACKAGE.zip" "$PACKAGE")
-          rm -rf "dist/$PACKAGE"
 
       - name: Create tag
         if: ${{ !inputs.simulate }}
