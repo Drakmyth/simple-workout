@@ -23,7 +23,6 @@ type playbackSlide struct {
 	Kind          string
 	Unit          string
 	Exercise      playbackExerciseView
-	ExerciseIndex int
 	SetNumber     int
 	CompletedSets int
 	TotalSets     int
@@ -33,6 +32,8 @@ type playbackSlide struct {
 type weightSaveStatus string
 
 const (
+	playbackAlternatingCookie = "playback_image_next"
+
 	weightSaveNone    weightSaveStatus = "none"
 	weightSavePending weightSaveStatus = "pending"
 	weightSaveDone    weightSaveStatus = "done"
@@ -40,7 +41,6 @@ const (
 
 type playbackPage struct {
 	Workout          PlaybackWorkout
-	Slides           []playbackSlide
 	Current          *playbackSlide
 	Exercises        []playbackExerciseView
 	Step             int
@@ -96,12 +96,24 @@ func (a *App) playbackStart(w http.ResponseWriter, r *http.Request) {
 	restSeconds, err := strconv.Atoi(r.FormValue("rest_seconds"))
 	preference := r.FormValue("image_preference")
 	views, err := parsePlaybackWeights(workout.Exercises, r.Form["weight"])
+	variants := r.Form["variant"]
+	initialStep := len(variants) == 0
+	alternatingNext := ""
+	if initialStep && preference == imageAlternating {
+		if cookie, cookieErr := r.Cookie(playbackAlternatingCookie); cookieErr == nil {
+			alternatingNext = cookie.Value
+		}
+	}
 	if err == nil {
-		err = assignPlaybackVariants(views, preference, r.Form["variant"])
+		alternatingNext, err = assignPlaybackVariants(views, preference, variants, alternatingNext)
 	}
 	if err != nil || restSeconds < 0 || !validImagePreference(preference) {
 		http.Error(w, "Invalid playback setup", http.StatusBadRequest)
 		return
+	}
+	if initialStep && preference == imageAlternating {
+		http.SetCookie(w, &http.Cookie{Name: playbackAlternatingCookie, Value: alternatingNext, Path: "/",
+			MaxAge: 31536000, HttpOnly: true, SameSite: http.SameSiteLaxMode})
 	}
 	if err := a.store.updatePlaybackSettings(restSeconds, preference); err != nil {
 		a.serverError(w, "update playback settings", err)
@@ -125,7 +137,7 @@ func (a *App) playbackStart(w http.ResponseWriter, r *http.Request) {
 	if r.FormValue("save_weights") == "true" {
 		saveStatus = weightSavePending
 	}
-	page := playbackPage{Workout: workout, Slides: slides, Exercises: views, Step: step, NextStep: step + 1,
+	page := playbackPage{Workout: workout, Exercises: views, Step: step, NextStep: step + 1,
 		Complete: step == len(slides), RestSeconds: restSeconds, ImagePreference: preference,
 		WeightSaveStatus: saveStatus}
 	if page.Complete && page.WeightSaveStatus == weightSavePending {
@@ -142,27 +154,6 @@ func (a *App) playbackStart(w http.ResponseWriter, r *http.Request) {
 		page.Current = &slides[step]
 	}
 	a.render(w, "playback.html", page)
-}
-
-func (a *App) playbackComplete(w http.ResponseWriter, r *http.Request) {
-	id, ok := pathInt(w, r, "id")
-	if !ok {
-		return
-	}
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Invalid completion", http.StatusBadRequest)
-		return
-	}
-	weights, err := playbackWeightValues(r.Form["weight"])
-	if err != nil {
-		http.Error(w, "Invalid completion", http.StatusBadRequest)
-		return
-	}
-	if err := a.store.saveWorkoutWeights(id, weights); err != nil {
-		a.serverError(w, "save workout weights", err)
-		return
-	}
-	w.WriteHeader(http.StatusNoContent)
 }
 
 func playbackExerciseViews(exercises []PlaybackExercise) []playbackExerciseView {
@@ -220,29 +211,28 @@ func playbackWeightValues(values []string) ([]*float64, error) {
 	return weights, nil
 }
 
-func assignPlaybackVariants(exercises []playbackExerciseView, preference string, submitted []string) error {
+func assignPlaybackVariants(exercises []playbackExerciseView, preference string, submitted []string, next string) (string, error) {
 	if len(submitted) > 0 && len(submitted) != len(exercises) {
-		return strconv.ErrSyntax
+		return next, strconv.ErrSyntax
 	}
-	next := ""
 	for index := range exercises {
 		variant := ""
 		if len(submitted) > 0 {
 			variant = submitted[index]
 			if variant != imageMale && variant != imageFemale {
-				return strconv.ErrSyntax
+				return next, strconv.ErrSyntax
 			}
 		} else {
 			var err error
 			variant, next, err = selectImageVariant(preference, next)
 			if err != nil {
-				return err
+				return next, err
 			}
 		}
 		exercises[index].Variant = variant
 		exercises[index].Image = exercises[index].Images[variant]
 	}
-	return nil
+	return next, nil
 }
 
 func buildPlaybackSlides(exercises []playbackExerciseView, restSeconds int, unit string) []playbackSlide {
@@ -252,10 +242,10 @@ func buildPlaybackSlides(exercises []playbackExerciseView, restSeconds int, unit
 	}
 	slides := make([]playbackSlide, 0, totalSets*2-1)
 	completed := 0
-	for exerciseIndex, exercise := range exercises {
+	for _, exercise := range exercises {
 		for set := 1; set <= exercise.Sets; set++ {
 			completed++
-			slides = append(slides, playbackSlide{Kind: "set", Unit: unit, Exercise: exercise, ExerciseIndex: exerciseIndex,
+			slides = append(slides, playbackSlide{Kind: "set", Unit: unit, Exercise: exercise,
 				SetNumber: set, CompletedSets: completed, TotalSets: totalSets})
 			if completed < totalSets {
 				slides = append(slides, playbackSlide{Kind: "rest", Unit: unit, RestSeconds: restSeconds,
