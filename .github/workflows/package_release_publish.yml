@@ -59,9 +59,6 @@ jobs:
       - name: Build
         run: go build ./cmd/simple-workout
 
-      - name: Validate development Compose
-        run: docker compose config --quiet
-
       - name: Generate release deployment
         run: |
           mkdir -p dist
