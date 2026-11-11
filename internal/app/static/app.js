@@ -1,3 +1,9 @@
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/service-worker.js").catch(() => {});
+  });
+}
+
 document.querySelectorAll("[data-auto-submit]").forEach((form) => {
   form.querySelector("select")?.addEventListener("change", () => form.requestSubmit());
   form.querySelector("[data-submit]")?.setAttribute("hidden", "");
