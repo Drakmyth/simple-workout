@@ -61,10 +61,17 @@ jobs:
 
       - name: Package release
         run: |
-          mkdir -p dist
-          sed "s/{{VERSION}}/${{ steps.read_version.outputs.version }}/g" release/compose.yaml.template > dist/compose.yaml
-          cp .env.example dist/.env.example
-          docker compose -f dist/compose.yaml config --quiet
+          PACKAGE="simple-workout-${{ steps.read_version.outputs.version }}"
+          mkdir -p "dist/$PACKAGE"
+          cp -r cmd internal "dist/$PACKAGE/"
+          cp .dockerignore Dockerfile LICENSE README.md VERSION compose.yaml go.mod go.sum "dist/$PACKAGE/"
+          sed \
+            -e "s/^SIMPLE_WORKOUT_VERSION=.*/SIMPLE_WORKOUT_VERSION=${{ steps.read_version.outputs.version }}/" \
+            -e "s/^SIMPLE_WORKOUT_VCS_REF=.*/SIMPLE_WORKOUT_VCS_REF=$GITHUB_SHA/" \
+            .env.example > "dist/$PACKAGE/.env.example"
+          docker compose -f "dist/$PACKAGE/compose.yaml" --env-file "dist/$PACKAGE/.env.example" config --quiet
+          (cd dist && zip -qr "$PACKAGE.zip" "$PACKAGE")
+          rm -rf "dist/$PACKAGE"
 
       - name: Create tag
         if: ${{ !inputs.simulate }}
@@ -77,9 +84,8 @@ jobs:
       - name: Upload package
         uses: actions/upload-artifact@v7
         with:
-          name: deployment
-          path: dist/
-          include-hidden-files: true
+          name: package
+          path: dist/simple-workout-${{ steps.read_version.outputs.version }}.zip
 
   release:
     runs-on: ubuntu-24.04
@@ -89,14 +95,13 @@ jobs:
         uses: actions/download-artifact@v8
         if: ${{ !inputs.simulate && inputs.publish-to-github }}
         with:
-          name: deployment
-          path: deployment
+          name: package
 
       - name: Create GitHub release
         if: ${{ !inputs.simulate && inputs.publish-to-github }}
         run: |
           gh release create "v${{ needs.package.outputs.version }}" \
-            deployment/compose.yaml deployment/.env.example \
+            "simple-workout-${{ needs.package.outputs.version }}.zip" \
             --generate-notes --verify-tag \
             --title "Simple Workout v${{ needs.package.outputs.version }}" \
             --repo "$GITHUB_REPOSITORY"
@@ -105,7 +110,7 @@ jobs:
 
   publish-ghcr:
     runs-on: ubuntu-24.04
-    needs: [package, release]
+    needs: [package]
     steps:
       - uses: actions/checkout@v7
 

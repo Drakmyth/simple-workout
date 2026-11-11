@@ -48,15 +48,16 @@ By default, the app is available at <http://localhost:8080>. Copy `.env.example`
 
 Runtime data is stored in the `workout-data` volume.
 
-### Released images
+### Release packages
 
-Automated releases publish AMD64 and ARM64 images to `ghcr.io/drakmyth/simple-workout` and attach a version-pinned `compose.yaml` plus `.env.example` to the GitHub release. Download those two files into one directory, optionally customize `.env`, and run:
+Automated releases attach a minimal source deployment package named `simple-workout-<version>.zip`. Download and extract it, then run:
 
 ```sh
-docker compose up -d
+cp .env.example .env
+docker compose up -d --build
 ```
 
-The GitHub Container Registry package must be public for deployment without registry credentials.
+The package contains only the application source and files required for Docker deployment. Automated releases also publish AMD64 and ARM64 images to `ghcr.io/drakmyth/simple-workout` for deployments that use a container registry. The GitHub Container Registry package must be public for use without registry credentials.
 
 ### PWA installation
 
@@ -80,7 +81,7 @@ When the proxy shares the Docker network, it should route to service `app` on po
 
 `VERSION` is the authoritative release version. Development builds report version `dev`; the release workflow injects `VERSION` into the application binary and container metadata.
 
-After a version change reaches `master`, run the **Package Release Publish** workflow from GitHub Actions. Simulation mode validates the release, generates deployment files, and builds both container architectures without creating a tag, pushing an image, or publishing a GitHub release.
+After a version change reaches `master`, run the **Package Release Publish** workflow from GitHub Actions. Simulation mode validates and packages the release and builds both container architectures without creating a tag, pushing an image, or publishing a GitHub release.
 
 ## Known limitations
 
