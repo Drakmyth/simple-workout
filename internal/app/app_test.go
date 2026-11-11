@@ -46,6 +46,23 @@ func TestHome(t *testing.T) {
 	}
 }
 
+func TestPWAAssets(t *testing.T) {
+	application := newTestApp(t)
+	for path, content := range map[string]string{
+		"/service-worker.js":            "self.addEventListener",
+		"/static/manifest.webmanifest":  `"display": "standalone"`,
+		"/static/icon-192.png":          "",
+		"/static/icon-512-maskable.png": "",
+	} {
+		request := httptest.NewRequest(http.MethodGet, path, nil)
+		response := httptest.NewRecorder()
+		application.Handler().ServeHTTP(response, request)
+		if response.Code != http.StatusOK || content != "" && !strings.Contains(response.Body.String(), content) {
+			t.Errorf("GET %s = (%d, %q)", path, response.Code, response.Body.String())
+		}
+	}
+}
+
 func TestInitialSettings(t *testing.T) {
 	application := newTestApp(t)
 	var restSeconds int

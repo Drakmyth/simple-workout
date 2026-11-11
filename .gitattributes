@@ -4,6 +4,7 @@
 *.html text diff=html
 *.css text diff=css
 *.js text diff=javascript
+*.webmanifest text diff=json
 *.svg text
 
 *.png binary
@@ -12,5 +13,6 @@
 *.webp binary
 *.ico binary
 
+internal/app/static/icon-*.png linguist-generated=true
 assets/exercise-images/manifest.json linguist-generated=true
 internal/app/static/images/exercises/*.webp linguist-generated=true

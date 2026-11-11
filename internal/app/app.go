@@ -53,6 +53,7 @@ func New(ctx context.Context, config Config) (*App, error) {
 	application := &App{store: store, templates: templates, logger: config.Logger}
 	mux := http.NewServeMux()
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static)))
+	mux.HandleFunc("GET /service-worker.js", serviceWorker)
 	mux.HandleFunc("GET /health", health)
 	mux.HandleFunc("GET /exercises", application.exerciseList)
 	mux.HandleFunc("GET /exercises/{slug}", application.exerciseDetail)
@@ -87,6 +88,17 @@ func (a *App) Handler() http.Handler {
 
 func (a *App) Close() error {
 	return a.store.Close()
+}
+
+func serviceWorker(w http.ResponseWriter, _ *http.Request) {
+	worker, err := files.ReadFile("static/service-worker.js")
+	if err != nil {
+		http.Error(w, "Service worker unavailable", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-cache")
+	_, _ = w.Write(worker)
 }
 
 func health(w http.ResponseWriter, _ *http.Request) {
