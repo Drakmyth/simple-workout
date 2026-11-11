@@ -58,10 +58,14 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - run: go test ./...
-      - run: go vet ./...
-      - run: go build ./cmd/simple-workout
-      - run: docker compose config --quiet
+      - name: Test
+        run: go test ./...
+      - name: Vet
+        run: go vet ./...
+      - name: Build
+        run: go build ./cmd/simple-workout
+      - name: Validate development Compose
+        run: docker compose config --quiet
       - name: Generate release deployment
         run: |
           mkdir -p dist
