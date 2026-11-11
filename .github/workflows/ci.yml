@@ -1,12 +1,12 @@
 name: CI
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [master]
   pull_request:
-
-permissions:
-  contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
