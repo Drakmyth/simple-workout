@@ -66,8 +66,9 @@ func TestPlaybackAdvancesWithoutJavaScript(t *testing.T) {
 	}
 	body := response.Body.String()
 	if !strings.Contains(body, `<section class="playback-slide" data-kind="rest"><p class="playback-progress">1 of 10 sets complete`) ||
+		!strings.Contains(body, `role="timer"`) || strings.Contains(body, `aria-live=`) ||
 		!strings.Contains(body, `<button type="submit">Next</button>`) {
-		t.Fatal("server-driven playback did not advance to the rest screen")
+		t.Fatal("server-driven playback did not render the accessible rest screen")
 	}
 }
 
