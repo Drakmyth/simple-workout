@@ -74,11 +74,14 @@ if (playback) {
       nextButton.textContent = "Skip rest";
       const display = slide.querySelector("[data-rest-timer]");
       let remaining = Number(display.dataset.restSeconds);
-      if (remaining <= 0) setTimeout(advance, 0);
+      if (remaining <= 0) nextButton.textContent = "Next";
       else timer = setInterval(() => {
         remaining -= 1;
         display.textContent = `${remaining} ${remaining === 1 ? "second" : "seconds"}`;
-        if (remaining <= 0) advance();
+        if (remaining <= 0) {
+          clearInterval(timer);
+          nextButton.textContent = "Next";
+        }
       }, 1000);
     }
     action.hidden = false;
