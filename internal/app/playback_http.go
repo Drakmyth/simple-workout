@@ -30,18 +30,25 @@ type playbackSlide struct {
 	RestSeconds   int
 }
 
+type weightSaveStatus string
+
+const (
+	weightSaveNone    weightSaveStatus = "none"
+	weightSavePending weightSaveStatus = "pending"
+	weightSaveDone    weightSaveStatus = "done"
+)
+
 type playbackPage struct {
-	Workout         PlaybackWorkout
-	Slides          []playbackSlide
-	Current         *playbackSlide
-	Exercises       []playbackExerciseView
-	Step            int
-	NextStep        int
-	Complete        bool
-	RestSeconds     int
-	ImagePreference string
-	SaveWeights     bool
-	SavedWeights    bool
+	Workout          PlaybackWorkout
+	Slides           []playbackSlide
+	Current          *playbackSlide
+	Exercises        []playbackExerciseView
+	Step             int
+	NextStep         int
+	Complete         bool
+	RestSeconds      int
+	ImagePreference  string
+	WeightSaveStatus weightSaveStatus
 }
 
 func (a *App) playbackSetup(w http.ResponseWriter, r *http.Request) {
@@ -114,10 +121,14 @@ func (a *App) playbackStart(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid playback step", http.StatusBadRequest)
 		return
 	}
+	saveStatus := weightSaveNone
+	if r.FormValue("save_weights") == "true" {
+		saveStatus = weightSavePending
+	}
 	page := playbackPage{Workout: workout, Slides: slides, Exercises: views, Step: step, NextStep: step + 1,
 		Complete: step == len(slides), RestSeconds: restSeconds, ImagePreference: preference,
-		SaveWeights: r.FormValue("save_weights") == "true"}
-	if page.Complete && page.SaveWeights {
+		WeightSaveStatus: saveStatus}
+	if page.Complete && page.WeightSaveStatus == weightSavePending {
 		weights, err := playbackWeights(views)
 		if err == nil {
 			err = a.store.saveWorkoutWeights(id, weights)
@@ -126,7 +137,7 @@ func (a *App) playbackStart(w http.ResponseWriter, r *http.Request) {
 			a.serverError(w, "save workout weights", err)
 			return
 		}
-		page.SavedWeights = true
+		page.WeightSaveStatus = weightSaveDone
 	} else if !page.Complete {
 		page.Current = &slides[step]
 	}
