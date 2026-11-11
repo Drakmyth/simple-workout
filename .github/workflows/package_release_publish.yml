@@ -78,10 +78,19 @@ jobs:
       - name: Create tag
         if: ${{ !inputs.simulate }}
         run: |
+          TAG="v${{ steps.read_version.outputs.version }}"
+          REMOTE_SHA=$(git ls-remote --refs origin "refs/tags/$TAG" | cut -f1)
+          if [[ -n "$REMOTE_SHA" ]]; then
+            if [[ "$REMOTE_SHA" != "$GITHUB_SHA" ]]; then
+              echo "$TAG already exists at a different commit" >&2
+              exit 1
+            fi
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "v${{ steps.read_version.outputs.version }}"
-          git push origin "v${{ steps.read_version.outputs.version }}"
+          git tag "$TAG"
+          git push origin "$TAG"
 
       - name: Upload package
         uses: actions/upload-artifact@v7
