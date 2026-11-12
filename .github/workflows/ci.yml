@@ -47,7 +47,7 @@ jobs:
                 ;;
               *.md|LICENSE)
                 ;;
-              cmd/*|internal/*|go.mod|go.sum)
+              assets/*|cmd/*|internal/*|go.mod|go.sum)
                 go=true
                 container=true
                 ;;

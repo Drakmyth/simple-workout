@@ -13,6 +13,5 @@
 *.webp binary
 *.ico binary
 
-internal/app/static/icon-*.png linguist-generated=true
-assets/exercise-images/manifest.json linguist-generated=true
-internal/app/static/images/exercises/*.webp linguist-generated=true
+assets/static/icon-*.png linguist-generated=true
+assets/static/images/exercises/*.webp linguist-generated=true
