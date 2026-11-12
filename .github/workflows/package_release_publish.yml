@@ -104,29 +104,36 @@ jobs:
     needs: [package]
     if: ${{ inputs.publish-to-github }}
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
       - name: Download package
         uses: actions/download-artifact@v8
         with:
           name: package
 
+      - name: Prepare release notes
+        run: |
+          NOTES_PATH=".github/release-notes/${{ needs.package.outputs.version }}.md"
+          if [[ -f "$NOTES_PATH" ]]; then
+            cat "$NOTES_PATH" > release-notes.md
+          else
+            : > release-notes.md
+          fi
+          if [[ "${{ inputs.publish-to-ghcr }}" == "true" ]]; then
+            cat >> release-notes.md <<'EOF'
+
+          <!-- container-image:start -->
+          <!-- container-image:end -->
+          EOF
+          fi
+
       - name: Create GitHub release
         if: ${{ !inputs.simulate }}
         run: |
           notes=()
-          if [[ "${{ inputs.publish-to-ghcr }}" == "true" ]]; then
-            NOTES=$(cat <<EOF
-          ### Container image
-
-          \`\`\`sh
-          docker pull ghcr.io/drakmyth/simple-workout:${{ needs.package.outputs.version }}
-          \`\`\`
-
-          Supports \`linux/amd64\` and \`linux/arm64\`.
-
-          [View the container package](https://github.com/Drakmyth/simple-workout/pkgs/container/simple-workout)
-          EOF
-            )
-            notes=(--notes "$NOTES")
+          if [[ -s release-notes.md ]]; then
+            notes=(--notes-file release-notes.md)
           fi
           gh release create "v${{ needs.package.outputs.version }}" \
             "simple-workout-${{ needs.package.outputs.version }}.zip" \
@@ -142,6 +149,8 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [package]
     if: ${{ inputs.publish-to-ghcr }}
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
@@ -161,6 +170,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and publish image
+        id: build
         uses: docker/build-push-action@v7
         with:
           context: .
@@ -174,3 +184,55 @@ jobs:
             ghcr.io/drakmyth/simple-workout:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  document-ghcr:
+    name: Document GHCR
+    runs-on: ubuntu-24.04
+    needs: [package, release, publish-ghcr]
+    if: ${{ inputs.publish-to-github && inputs.publish-to-ghcr }}
+    steps:
+      - name: Prepare container notes
+        env:
+          VERSION: ${{ needs.package.outputs.version }}
+          DIGEST: ${{ needs.publish-ghcr.outputs.digest }}
+        run: |
+          cat > container-notes.md <<EOF
+          ### Container image
+
+          \`\`\`sh
+          docker pull ghcr.io/drakmyth/simple-workout:$VERSION
+          \`\`\`
+
+          Supports \`linux/amd64\` and \`linux/arm64\`.
+
+          [View the container package](https://github.com/Drakmyth/simple-workout/pkgs/container/simple-workout)
+          EOF
+          if [[ -n "$DIGEST" ]]; then
+            # shellcheck disable=SC2016
+            printf '\nDigest: `%s`\n' "$DIGEST" >> container-notes.md
+          fi
+
+      - name: Add container notes to GitHub release
+        if: ${{ !inputs.simulate }}
+        env:
+          VERSION: ${{ needs.package.outputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "v$VERSION" --json body --jq .body > release-notes.md
+          # The quoted heredoc keeps the Python source literal.
+          # shellcheck disable=SC2016
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("release-notes.md")
+          body = path.read_text()
+          start = "<!-- container-image:start -->"
+          end = "<!-- container-image:end -->"
+          if start not in body or end not in body:
+              raise SystemExit("container image markers are missing from the release notes")
+          container = Path("container-notes.md").read_text().strip()
+          before, remainder = body.split(start, 1)
+          _, after = remainder.split(end, 1)
+          path.write_text(f"{before}{start}\n\n{container}\n\n{end}{after}")
+          PY
+          gh release edit "v$VERSION" --notes-file release-notes.md
