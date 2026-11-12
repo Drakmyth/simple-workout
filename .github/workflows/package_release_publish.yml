@@ -104,17 +104,32 @@ jobs:
     needs: [package]
     if: ${{ inputs.publish-to-github }}
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
       - name: Download package
         uses: actions/download-artifact@v8
         with:
           name: package
 
+      - name: Prepare release notes
+        run: |
+          python .github/release-notes/tooling/compose.py prepare-release \
+            --notes ".github/release-notes/${{ needs.package.outputs.version }}.md" \
+            --include-container "${{ inputs.publish-to-ghcr }}" \
+            --output release-notes.md
+
       - name: Create GitHub release
         if: ${{ !inputs.simulate }}
         run: |
+          notes=()
+          if [[ -s release-notes.md ]]; then
+            notes=(--notes-file release-notes.md)
+          fi
           gh release create "v${{ needs.package.outputs.version }}" \
             "simple-workout-${{ needs.package.outputs.version }}.zip" \
             --generate-notes --verify-tag \
+            "${notes[@]}" \
             --title "Simple Workout v${{ needs.package.outputs.version }}" \
             --repo "$GITHUB_REPOSITORY"
         env:
@@ -125,6 +140,8 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [package]
     if: ${{ inputs.publish-to-ghcr }}
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
@@ -144,6 +161,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and publish image
+        id: build
         uses: docker/build-push-action@v7
         with:
           context: .
@@ -157,3 +175,32 @@ jobs:
             ghcr.io/drakmyth/simple-workout:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  document-ghcr:
+    name: Document GHCR
+    runs-on: ubuntu-24.04
+    needs: [package, release, publish-ghcr]
+    if: ${{ inputs.publish-to-github && inputs.publish-to-ghcr }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Prepare container notes
+        run: |
+          python .github/release-notes/tooling/compose.py render-container \
+            --template .github/release-notes/tooling/container.md.tmpl \
+            --version "${{ needs.package.outputs.version }}" \
+            --digest "${{ needs.publish-ghcr.outputs.digest }}" \
+            --output container-notes.md
+
+      - name: Add container notes to GitHub release
+        if: ${{ !inputs.simulate }}
+        env:
+          VERSION: ${{ needs.package.outputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "v$VERSION" --json body --jq .body > release-notes.md
+          python .github/release-notes/tooling/compose.py insert-container \
+            --release release-notes.md \
+            --container container-notes.md
+          gh release edit "v$VERSION" --notes-file release-notes.md
