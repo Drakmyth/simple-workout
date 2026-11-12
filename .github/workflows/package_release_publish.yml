@@ -114,19 +114,10 @@ jobs:
 
       - name: Prepare release notes
         run: |
-          NOTES_PATH=".github/release-notes/${{ needs.package.outputs.version }}.md"
-          if [[ -f "$NOTES_PATH" ]]; then
-            cat "$NOTES_PATH" > release-notes.md
-          else
-            : > release-notes.md
-          fi
-          if [[ "${{ inputs.publish-to-ghcr }}" == "true" ]]; then
-            cat >> release-notes.md <<'EOF'
-
-          <!-- container-image:start -->
-          <!-- container-image:end -->
-          EOF
-          fi
+          python .github/release-notes/tooling/compose.py prepare-release \
+            --notes ".github/release-notes/${{ needs.package.outputs.version }}.md" \
+            --include-container "${{ inputs.publish-to-ghcr }}" \
+            --output release-notes.md
 
       - name: Create GitHub release
         if: ${{ !inputs.simulate }}
@@ -191,26 +182,16 @@ jobs:
     needs: [package, release, publish-ghcr]
     if: ${{ inputs.publish-to-github && inputs.publish-to-ghcr }}
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
       - name: Prepare container notes
-        env:
-          VERSION: ${{ needs.package.outputs.version }}
-          DIGEST: ${{ needs.publish-ghcr.outputs.digest }}
         run: |
-          cat > container-notes.md <<EOF
-          ### Container image
-
-          \`\`\`sh
-          docker pull ghcr.io/drakmyth/simple-workout:$VERSION
-          \`\`\`
-
-          Supports \`linux/amd64\` and \`linux/arm64\`.
-
-          [View the container package](https://github.com/Drakmyth/simple-workout/pkgs/container/simple-workout)
-          EOF
-          if [[ -n "$DIGEST" ]]; then
-            # shellcheck disable=SC2016
-            printf '\nDigest: `%s`\n' "$DIGEST" >> container-notes.md
-          fi
+          python .github/release-notes/tooling/compose.py render-container \
+            --template .github/release-notes/tooling/container.md.tmpl \
+            --version "${{ needs.package.outputs.version }}" \
+            --digest "${{ needs.publish-ghcr.outputs.digest }}" \
+            --output container-notes.md
 
       - name: Add container notes to GitHub release
         if: ${{ !inputs.simulate }}
@@ -219,20 +200,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release view "v$VERSION" --json body --jq .body > release-notes.md
-          # The quoted heredoc keeps the Python source literal.
-          # shellcheck disable=SC2016
-          python - <<'PY'
-          from pathlib import Path
-
-          path = Path("release-notes.md")
-          body = path.read_text()
-          start = "<!-- container-image:start -->"
-          end = "<!-- container-image:end -->"
-          if start not in body or end not in body:
-              raise SystemExit("container image markers are missing from the release notes")
-          container = Path("container-notes.md").read_text().strip()
-          before, remainder = body.split(start, 1)
-          _, after = remainder.split(end, 1)
-          path.write_text(f"{before}{start}\n\n{container}\n\n{end}{after}")
-          PY
+          python .github/release-notes/tooling/compose.py insert-container \
+            --release release-notes.md \
+            --container container-notes.md
           gh release edit "v$VERSION" --notes-file release-notes.md
