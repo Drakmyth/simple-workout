@@ -8,15 +8,12 @@ image="dpokidov/imagemagick:7.1.1-47"
 source_dir="${1:-reference/exercises}"
 output_dir="${2:-assets/static/images/exercises}"
 
-go run ./tools/exercise-images -source "$source_dir"
-
 if [ ! -d "$source_dir" ]; then
   echo "source directory not found: $source_dir" >&2
   exit 1
 fi
 
 mkdir -p "$output_dir"
-rm -f "$output_dir"/*.webp
 source_dir=$(cd "$source_dir" && pwd)
 output_dir=$(cd "$output_dir" && pwd)
 source_mount=$source_dir
@@ -41,6 +38,13 @@ MSYS_NO_PATHCONV=1 docker run --rm \
         exit 1
       fi
       base=$(basename "$file" .png)
+      case "$base" in
+        *-female|*-male) ;;
+        *)
+          echo "unexpected source filename: $file" >&2
+          exit 1
+          ;;
+      esac
       magick "$file" -strip -define webp:method=6 -quality 88 "/output/${base}.webp"
     done
     if [ "$found" -eq 0 ]; then
