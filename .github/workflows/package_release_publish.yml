@@ -112,9 +112,26 @@ jobs:
       - name: Create GitHub release
         if: ${{ !inputs.simulate }}
         run: |
+          notes=()
+          if [[ "${{ inputs.publish-to-ghcr }}" == "true" ]]; then
+            NOTES=$(cat <<EOF
+          ### Container image
+
+          \`\`\`sh
+          docker pull ghcr.io/drakmyth/simple-workout:${{ needs.package.outputs.version }}
+          \`\`\`
+
+          Supports \`linux/amd64\` and \`linux/arm64\`.
+
+          [View the container package](https://github.com/Drakmyth/simple-workout/pkgs/container/simple-workout)
+          EOF
+            )
+            notes=(--notes "$NOTES")
+          fi
           gh release create "v${{ needs.package.outputs.version }}" \
             "simple-workout-${{ needs.package.outputs.version }}.zip" \
             --generate-notes --verify-tag \
+            "${notes[@]}" \
             --title "Simple Workout v${{ needs.package.outputs.version }}" \
             --repo "$GITHUB_REPOSITORY"
         env:
