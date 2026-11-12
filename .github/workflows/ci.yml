@@ -13,8 +13,64 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  workflow-lint:
-    name: Workflow Lint
+  changes:
+    name: Change Detection
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      workflows: ${{ steps.changes.outputs.workflows }}
+      go: ${{ steps.changes.outputs.go }}
+      container: ${{ steps.changes.outputs.container }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Classify changes
+        id: changes
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          workflows=false
+          go=false
+          container=false
+
+          if [[ "$BASE_SHA" == "0000000000000000000000000000000000000000" ]]; then
+            BASE_SHA="$HEAD_SHA^"
+          fi
+
+          while IFS= read -r path; do
+            case "$path" in
+              .github/workflows/*)
+                workflows=true
+                ;;
+              *.md|LICENSE)
+                ;;
+              cmd/*|internal/*|go.mod|go.sum)
+                go=true
+                container=true
+                ;;
+              Dockerfile|.dockerignore|compose*.yaml|VERSION)
+                container=true
+                ;;
+              *)
+                go=true
+                container=true
+                ;;
+            esac
+          done < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+
+          {
+            echo "workflows=$workflows"
+            echo "go=$go"
+            echo "container=$container"
+          } >> "$GITHUB_OUTPUT"
+
+  workflows:
+    name: Workflow Validation
+    needs: changes
+    if: needs.changes.outputs.workflows == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -23,8 +79,10 @@ jobs:
       - name: Lint workflows
         run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12
 
-  build-test:
-    name: Build and Test
+  go:
+    name: Go Validation
+    needs: changes
+    if: needs.changes.outputs.go == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -43,7 +101,9 @@ jobs:
         run: go build ./cmd/simple-workout
 
   container:
-    name: Container
+    name: Container Validation
+    needs: changes
+    if: needs.changes.outputs.container == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -51,5 +111,12 @@ jobs:
         uses: actions/checkout@v7
       - name: Validate Compose
         run: docker compose config --quiet
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
       - name: Build container
-        run: docker build .
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: false
+          cache-from: type=gha,scope=ci
+          cache-to: type=gha,mode=max,scope=ci
