@@ -1,12 +1,12 @@
 #!/usr/bin/env sh
 set -eu
 
-repo_dir=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
+repo_dir=$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)
 cd "$repo_dir"
 
 image="dpokidov/imagemagick:7.1.1-47"
 source_dir="${1:-reference/exercises}"
-output_dir="${2:-internal/app/static/images/exercises}"
+output_dir="${2:-assets/static/images/exercises}"
 
 go run ./tools/exercise-images -source "$source_dir"
 

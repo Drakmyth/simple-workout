@@ -25,8 +25,8 @@ type entry struct {
 
 func main() {
 	sourceDir := flag.String("source", "reference/exercises", "directory containing reviewed source PNGs")
-	requirementsPath := flag.String("requirements", "assets/exercise-images/requirements.json", "exercise requirements file")
-	outputPath := flag.String("output", "assets/exercise-images/manifest.json", "manifest output path")
+	requirementsPath := flag.String("requirements", "tools/exercise-images/assets/requirements.json", "exercise requirements file")
+	outputPath := flag.String("output", "tools/exercise-images/assets/manifest.json", "manifest output path")
 	flag.Parse()
 
 	if err := run(*sourceDir, *requirementsPath, *outputPath); err != nil {
@@ -57,10 +57,10 @@ func run(sourceDir, requirementsPath, outputPath string) error {
 			entries = append(entries, entry{
 				Exercise:       exercise,
 				Variant:        variant,
-				ModelReference: "assets/exercise-images/models/" + variant + ".png",
-				PromptRecipe:   "assets/exercise-images/requirements.json#" + exercise,
+				ModelReference: "tools/exercise-images/assets/models/" + variant + ".png",
+				PromptRecipe:   "tools/exercise-images/assets/requirements.json#" + exercise,
 				SourceSHA256:   hash,
-				Output:         "internal/app/static/images/exercises/" + name + ".webp",
+				Output:         "assets/static/images/exercises/" + name + ".webp",
 				ReviewStatus:   "approved",
 			})
 		}

@@ -2,17 +2,15 @@ package app
 
 import (
 	"context"
-	"embed"
 	"fmt"
 	"html/template"
+
+	appassets "github.com/Drakmyth/simple-workout/assets"
 	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
 )
-
-//go:embed migrations/*.sql templates/*.html static/*
-var files embed.FS
 
 type Config struct {
 	DataDir string
@@ -39,12 +37,12 @@ func New(ctx context.Context, config Config) (*App, error) {
 		return nil, err
 	}
 
-	templates, err := template.ParseFS(files, "templates/*.html")
+	templates, err := template.ParseFS(appassets.Files, "templates/*.html")
 	if err != nil {
 		store.Close()
 		return nil, fmt.Errorf("parse templates: %w", err)
 	}
-	static, err := fs.Sub(files, "static")
+	static, err := fs.Sub(appassets.Files, "static")
 	if err != nil {
 		store.Close()
 		return nil, fmt.Errorf("open static files: %w", err)
@@ -91,7 +89,7 @@ func (a *App) Close() error {
 }
 
 func serviceWorker(w http.ResponseWriter, _ *http.Request) {
-	worker, err := files.ReadFile("static/service-worker.js")
+	worker, err := appassets.Files.ReadFile("static/service-worker.js")
 	if err != nil {
 		http.Error(w, "Service worker unavailable", http.StatusInternalServerError)
 		return

@@ -76,7 +76,7 @@ func (s *Store) applyMigrations(ctx context.Context) error {
 		return fmt.Errorf("read applied migrations: %w", err)
 	}
 
-	paths, err := fs.Glob(files, "migrations/*.sql")
+	paths, err := fs.Glob(migrations, "migrations/*.sql")
 	if err != nil {
 		return fmt.Errorf("find migrations: %w", err)
 	}
@@ -86,7 +86,7 @@ func (s *Store) applyMigrations(ctx context.Context) error {
 		if applied[name] {
 			continue
 		}
-		migration, err := files.ReadFile(path)
+		migration, err := migrations.ReadFile(path)
 		if err != nil {
 			return fmt.Errorf("read migration %s: %w", name, err)
 		}
