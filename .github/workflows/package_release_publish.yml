@@ -1,0 +1,159 @@
+name: Package Release Publish
+
+permissions:
+  contents: write
+  packages: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish-to-github:
+        description: Create a GitHub release?
+        required: false
+        default: true
+        type: boolean
+      publish-to-ghcr:
+        description: Publish the release to GHCR?
+        required: false
+        default: true
+        type: boolean
+      simulate:
+        description: Simulate execution?
+        required: false
+        default: false
+        type: boolean
+
+defaults:
+  run:
+    shell: bash -e -o pipefail {0}
+
+jobs:
+  package:
+    name: Package
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.read_version.outputs.version }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Read version
+        id: read_version
+        run: |
+          VERSION=$(tr -d '[:space:]' < VERSION)
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "VERSION must contain a semantic version such as 0.2.0" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Test
+        run: go test ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build
+        run: go build ./cmd/simple-workout
+
+      - name: Package release
+        run: |
+          PACKAGE="simple-workout-${{ steps.read_version.outputs.version }}"
+          mkdir -p "dist/$PACKAGE"
+          cp -r cmd internal "dist/$PACKAGE/"
+          cp .dockerignore .env.example Dockerfile LICENSE README.md VERSION go.mod go.sum "dist/$PACKAGE/"
+          sed \
+            -e "s/VERSION: dev/VERSION: ${{ steps.read_version.outputs.version }}/" \
+            -e "s/VCS_REF: unknown/VCS_REF: $GITHUB_SHA/" \
+            compose.yaml > "dist/$PACKAGE/compose.yaml"
+          docker compose -f "dist/$PACKAGE/compose.yaml" --env-file "dist/$PACKAGE/.env.example" config --quiet
+          (cd dist && zip -qr "$PACKAGE.zip" "$PACKAGE")
+
+      - name: Create tag
+        if: ${{ !inputs.simulate }}
+        run: |
+          TAG="v${{ steps.read_version.outputs.version }}"
+          REMOTE_SHA=$(git ls-remote --refs origin "refs/tags/$TAG" | cut -f1)
+          if [[ -n "$REMOTE_SHA" ]]; then
+            if [[ "$REMOTE_SHA" != "$GITHUB_SHA" ]]; then
+              echo "$TAG already exists at a different commit" >&2
+              exit 1
+            fi
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG"
+          git push origin "$TAG"
+
+      - name: Upload package
+        uses: actions/upload-artifact@v7
+        with:
+          name: package
+          path: dist/simple-workout-${{ steps.read_version.outputs.version }}.zip
+
+  release:
+    name: Release
+    runs-on: ubuntu-24.04
+    needs: [package]
+    if: ${{ inputs.publish-to-github }}
+    steps:
+      - name: Download package
+        uses: actions/download-artifact@v8
+        with:
+          name: package
+
+      - name: Create GitHub release
+        if: ${{ !inputs.simulate }}
+        run: |
+          gh release create "v${{ needs.package.outputs.version }}" \
+            "simple-workout-${{ needs.package.outputs.version }}.zip" \
+            --generate-notes --verify-tag \
+            --title "Simple Workout v${{ needs.package.outputs.version }}" \
+            --repo "$GITHUB_REPOSITORY"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-ghcr:
+    name: Publish GHCR
+    runs-on: ubuntu-24.04
+    needs: [package]
+    if: ${{ inputs.publish-to-ghcr }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        if: ${{ !inputs.simulate }}
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: ${{ !inputs.simulate }}
+          build-args: |
+            VERSION=${{ needs.package.outputs.version }}
+            VCS_REF=${{ github.sha }}
+          tags: |
+            ghcr.io/drakmyth/simple-workout:${{ needs.package.outputs.version }}
+            ghcr.io/drakmyth/simple-workout:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
