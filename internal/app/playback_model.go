@@ -1,6 +1,7 @@
 package app
 
 type PlaybackSettings struct {
+	KeepScreenOn    bool
 	RestSeconds     int
 	WeightUnit      string
 	ImagePreference string

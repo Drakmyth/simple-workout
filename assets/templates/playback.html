@@ -9,11 +9,12 @@
   <link rel="apple-touch-icon" href="/static/icon-192.png">
 </head>
 <body class="playback-body">
-  <main class="playback" data-playback>
+  <main class="playback" data-playback {{if and .KeepScreenOn (not .Complete)}}data-keep-screen-on{{end}}>
     {{if .Complete}}<section class="playback-slide completion-slide">{{template "playback-complete" .}}</section>
     {{else}}<section class="playback-slide" data-kind="{{.Current.Kind}}">{{template "playback-slide" .Current}}</section>{{end}}
   </main>
   {{if not .Complete}}<form class="playback-action" data-playback-action method="post" action="/workouts/{{.Workout.ID}}/play">
+    {{if .KeepScreenOn}}<input type="hidden" name="keep_screen_on" value="true">{{end}}
     <input type="hidden" name="step" value="{{.NextStep}}"><input type="hidden" name="rest_seconds" value="{{.RestSeconds}}"><input type="hidden" name="image_preference" value="{{.ImagePreference}}">{{if eq .WeightSaveStatus "pending"}}<input type="hidden" name="save_weights" value="true">{{end}}
     {{range .Exercises}}<input type="hidden" name="weight" value="{{.Weight}}"><input type="hidden" name="variant" value="{{.Variant}}">{{end}}<button type="submit">Next</button>
   </form>{{end}}
