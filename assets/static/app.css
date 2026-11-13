@@ -291,6 +291,11 @@ button.danger { color: #8f1d25; background: #fff; border-color: #d8aeb1; }
 .set-target { margin: 0.75rem 0 1rem; color: #8f1d25; font-size: 1.15rem; font-weight: 750; }
 .playback-image { display: block; width: 100%; height: auto; border: 1px solid #dfe1e3; border-radius: 0.75rem; }
 .playback-guidance { margin-top: 1rem; padding: 1.25rem; }
+.playback.pinned-image { position: fixed; top: 0; left: 50%; transform: translateX(-50%); padding-bottom: 0; }
+.pinned-image .playback-slide[data-kind="set"] { display: grid; grid-template-rows: auto minmax(0, 1fr); height: var(--set-height); }
+.pinned-image .playback-image { width: auto; max-width: 100%; max-height: 32dvh; margin: 0 auto; object-fit: contain; }
+.pinned-image .playback-guidance { min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; }
+.playback-guidance:focus-visible { outline: 2px solid #a3212a; outline-offset: 2px; }
 .playback-guidance h2 { margin: 0; font-size: 1.2rem; }
 .playback-guidance h2:not(:first-child) { margin-top: 1.25rem; }
 .playback-guidance ol { padding-left: 1.4rem; line-height: 1.55; }

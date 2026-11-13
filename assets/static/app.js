@@ -11,6 +11,29 @@ document.querySelectorAll("[data-auto-submit]").forEach((form) => {
 
 const playback = document.querySelector("[data-playback]");
 if (playback) {
+  if (playback.hasAttribute("data-keep-image-visible") && "ResizeObserver" in window) {
+    const header = playback.querySelector(".playback-set-header");
+    const guidance = playback.querySelector(".playback-guidance");
+    const action = document.querySelector("[data-playback-action]");
+    const updateLayout = () => {
+      // Try the compact layout, but retain at least 10em of space for guidance.
+      const viewport = window.visualViewport?.height ?? document.documentElement.clientHeight;
+      const style = getComputedStyle(playback);
+      const height = viewport - (playback.getBoundingClientRect().top + window.scrollY)
+        - parseFloat(style.paddingTop) - action.getBoundingClientRect().height - 16;
+      playback.style.setProperty("--set-height", `${Math.max(0, height)}px`);
+      playback.classList.add("pinned-image");
+      const minimum = parseFloat(getComputedStyle(guidance).fontSize) * 10;
+      if (guidance.clientHeight < minimum) playback.classList.remove("pinned-image");
+    };
+    const observer = new window.ResizeObserver(updateLayout);
+    observer.observe(header);
+    observer.observe(action);
+    window.addEventListener("resize", updateLayout);
+    window.visualViewport?.addEventListener("resize", updateLayout);
+    updateLayout();
+  }
+
   const copyButton = playback.querySelector("[data-copy-summary]");
   if (copyButton && navigator.clipboard?.writeText) {
     const summary = playback.querySelector("[data-summary-text]");
