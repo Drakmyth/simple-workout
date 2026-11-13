@@ -81,7 +81,12 @@ if (playback) {
       const timer = setInterval(() => {
         remaining -= 1;
         display.textContent = `${remaining} ${remaining === 1 ? "second" : "seconds"}`;
-        if (remaining <= 0) clearInterval(timer);
+        if (remaining <= 0) {
+          clearInterval(timer);
+          if (document.visibilityState === "visible") {
+            playback.querySelector("[data-rest-sound]")?.play().catch(() => {});
+          }
+        }
       }, 1000);
     }
   }

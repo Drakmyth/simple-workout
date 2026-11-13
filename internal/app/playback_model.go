@@ -1,6 +1,7 @@
 package app
 
 type PlaybackSettings struct {
+	RestSound       bool
 	KeepScreenOn    bool
 	RestSeconds     int
 	WeightUnit      string
