@@ -308,3 +308,4 @@ button.danger { color: #8f1d25; background: #fff; border-color: #d8aeb1; }
 .rest-duration { color: #8f1d25; font-size: 2rem; font-weight: 750; }
 .playback-action { position: fixed; right: 0; bottom: 0; left: 0; padding: 0.75rem max(1rem, calc((100% - 48rem) / 2)) calc(0.75rem + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid #dfe1e3; }
 .playback-action button { width: 100%; padding: 0.9rem; }
+.playback.rest-counting ~ .playback-action button { background: #62666b; border-color: #62666b; }

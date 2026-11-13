@@ -4,7 +4,8 @@ const { readFileSync } = require("node:fs");
 const vm = require("node:vm");
 const script = readFileSync("assets/static/app.js", "utf8");
 
-function setup({ seconds = 2, enabled = true, visible = true, denied = false } = {}) {
+function setup({ seconds = 2, enabled = true, visible = true, denied = false, rest = true } = {}) {
+  const classes = new Set();
   let tick;
   let plays = 0;
   let stopped = false;
@@ -15,7 +16,8 @@ function setup({ seconds = 2, enabled = true, visible = true, denied = false } =
   } };
   const playback = {
     hasAttribute: () => false,
-    querySelector: (selector) => selector === "[data-rest-timer]" ? display :
+    classList: { add: (name) => classes.add(name), remove: (name) => classes.delete(name) },
+    querySelector: (selector) => selector === "[data-rest-timer]" ? (rest ? display : null) :
       selector === "[data-rest-sound]" && enabled ? audio : null,
   };
   const document = {
@@ -27,8 +29,23 @@ function setup({ seconds = 2, enabled = true, visible = true, denied = false } =
     setInterval: (callback) => { tick = callback; return 1; },
     clearInterval: () => { stopped = true; },
   });
-  return { tick: () => { if (!stopped) tick?.(); }, plays: () => plays, display };
+  return { tick: () => { if (!stopped) tick?.(); }, plays: () => plays, display, classes };
 }
+
+test("rest countdown cue starts immediately and clears at zero even without sound", () => {
+  const state = setup({ enabled: false });
+  assert.equal(state.classes.has("rest-counting"), true);
+  state.tick();
+  assert.equal(state.classes.has("rest-counting"), true);
+  state.tick();
+  assert.equal(state.classes.has("rest-counting"), false);
+  assert.equal(state.display.textContent, "0 seconds");
+});
+
+test("zero-length rests and non-rest screens do not get the countdown cue", () => {
+  assert.equal(setup({ seconds: 0 }).classes.has("rest-counting"), false);
+  assert.equal(setup({ rest: false }).classes.has("rest-counting"), false);
+});
 
 test("plays once when a positive rest reaches zero, never before", () => {
   const state = setup();
