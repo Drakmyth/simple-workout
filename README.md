@@ -8,6 +8,7 @@ Simple Workout is a mobile-first progressive web app for defining and playing gu
 - Renameable, reorderable workouts with editable sets, reps, and weights
 - Guided set and rest playback with optional JavaScript timers and a rest-complete chime
 - Per-exercise male, female, alternating, or random playback images
+- Optional fixed exercise image with independently scrollable guidance
 - Optional working-weight updates after workout completion
 - Optional exercise performance notes and a transient completion summary
 - Installable PWA that remains network-dependent
@@ -77,6 +78,8 @@ Before a release, verify the deployed PWA on a target device:
 3. Complete a workout and confirm the rest timer, Next actions, and optional weight saving.
 4. Restart the container and confirm workout changes persist.
 5. Disconnect the network and confirm the expected network-dependent failure.
+
+The optional **Keep exercise image visible** setting keeps the set header and image above a keyboard-scrollable guidance area. Short screens or large text fall back to normal page scrolling when there is insufficient reading space. Without JavaScript, normal page scrolling remains available.
 
 The optional rest-complete sound uses device media volume and plays once when a positive rest countdown reaches zero while the page is visible. Browsers may block audio autoplay; sound is best-effort and is not a background or lock-screen alarm. Workout progression still uses normal full-page form submissions.
 

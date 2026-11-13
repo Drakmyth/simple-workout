@@ -42,6 +42,7 @@ const (
 )
 
 type playbackPage struct {
+	KeepImageVisible bool
 	RestSound        bool
 	Summary          bool
 	Unit             string
@@ -105,6 +106,7 @@ func (a *App) playbackStart(w http.ResponseWriter, r *http.Request) {
 	preference := r.FormValue("image_preference")
 	keepScreenOn := r.FormValue("keep_screen_on") == "true"
 	restSound := r.FormValue("rest_sound") == "true"
+	keepImageVisible := r.FormValue("keep_image_visible") == "true"
 	views, err := parsePlaybackWeights(workout.Exercises, r.Form["weight"])
 	variants := r.Form["variant"]
 	initialStep := len(variants) == 0
@@ -125,7 +127,7 @@ func (a *App) playbackStart(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, &http.Cookie{Name: playbackAlternatingCookie, Value: alternatingNext, Path: "/",
 			MaxAge: 31536000, HttpOnly: true, SameSite: http.SameSiteLaxMode})
 	}
-	if err := a.store.updatePlaybackSettings(restSeconds, preference, keepScreenOn, restSound); err != nil {
+	if err := a.store.updatePlaybackSettings(restSeconds, preference, keepScreenOn, restSound, keepImageVisible); err != nil {
 		a.serverError(w, "update playback settings", err)
 		return
 	}
@@ -155,7 +157,7 @@ func (a *App) playbackStart(w http.ResponseWriter, r *http.Request) {
 	if r.FormValue("save_weights") == "true" {
 		saveStatus = weightSavePending
 	}
-	page := playbackPage{RestSound: restSound, KeepScreenOn: keepScreenOn, Workout: workout, Exercises: views, Step: step, NextStep: step + 1,
+	page := playbackPage{KeepImageVisible: keepImageVisible, RestSound: restSound, KeepScreenOn: keepScreenOn, Workout: workout, Exercises: views, Step: step, NextStep: step + 1,
 		Complete: step >= len(slides), RestSeconds: restSeconds, ImagePreference: preference,
 		WeightSaveStatus: saveStatus, Summary: step == len(slides)+1, Unit: unit, NoteIndex: -1}
 	if page.Summary && page.WeightSaveStatus == weightSavePending {

@@ -1,11 +1,12 @@
 package app
 
 type PlaybackSettings struct {
-	RestSound       bool
-	KeepScreenOn    bool
-	RestSeconds     int
-	WeightUnit      string
-	ImagePreference string
+	KeepImageVisible bool
+	RestSound        bool
+	KeepScreenOn     bool
+	RestSeconds      int
+	WeightUnit       string
+	ImagePreference  string
 }
 
 type PlaybackWorkout struct {
