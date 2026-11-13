@@ -253,5 +253,12 @@ func buildPlaybackSlides(exercises []playbackExerciseView, restSeconds int, unit
 			}
 		}
 	}
+	for index := range slides {
+		if slides[index].Kind == "rest" {
+			next := slides[index+1]
+			slides[index].Exercise = next.Exercise
+			slides[index].SetNumber = next.SetNumber
+		}
+	}
 	return slides
 }
