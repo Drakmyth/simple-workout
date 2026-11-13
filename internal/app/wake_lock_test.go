@@ -29,7 +29,7 @@ func TestKeepScreenOn(t *testing.T) {
 			}
 			body := response.Body.String()
 			want := enabled && step != "19"
-			if strings.Contains(body, "data-keep-screen-on") != want || strings.Contains(body, `name="keep_screen_on"`) != want {
+			if strings.Contains(body, "data-keep-screen-on") != want || strings.Contains(body, `name="keep_screen_on"`) != enabled {
 				t.Fatalf("incorrect wake lock markup: %s", body)
 			}
 		}

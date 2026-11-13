@@ -8,6 +8,8 @@ import (
 
 type playbackExerciseView struct {
 	PlaybackExercise
+	Index   int
+	Note    string
 	Weight  string
 	Variant string
 	Image   ExerciseImage
@@ -40,6 +42,10 @@ const (
 )
 
 type playbackPage struct {
+	Summary          bool
+	Unit             string
+	NoteExercise     *playbackExerciseView
+	NoteIndex        int
 	KeepScreenOn     bool
 	Workout          PlaybackWorkout
 	Current          *playbackSlide
@@ -131,17 +137,28 @@ func (a *App) playbackStart(w http.ResponseWriter, r *http.Request) {
 		step, err = strconv.Atoi(value)
 	}
 	slides := buildPlaybackSlides(views, restSeconds, unit)
-	if err != nil || step < 0 || step > len(slides) {
+	if err != nil || step < 0 || step > len(slides)+1 {
 		http.Error(w, "Invalid playback step", http.StatusBadRequest)
 		return
+	}
+	for index := range views {
+		note := r.FormValue("note_" + strconv.Itoa(index))
+		if len(note) > 4000 {
+			http.Error(w, "Performance note is too long", http.StatusBadRequest)
+			return
+		}
+		views[index].Note = note
 	}
 	saveStatus := weightSaveNone
 	if r.FormValue("save_weights") == "true" {
 		saveStatus = weightSavePending
 	}
 	page := playbackPage{KeepScreenOn: keepScreenOn, Workout: workout, Exercises: views, Step: step, NextStep: step + 1,
-		Complete: step == len(slides), RestSeconds: restSeconds, ImagePreference: preference,
-		WeightSaveStatus: saveStatus}
+		Complete: step >= len(slides), RestSeconds: restSeconds, ImagePreference: preference,
+		WeightSaveStatus: saveStatus, Summary: step == len(slides)+1, Unit: unit, NoteIndex: -1}
+	if page.Summary && page.WeightSaveStatus == weightSavePending {
+		page.WeightSaveStatus = weightSaveDone
+	}
 	if page.Complete && page.WeightSaveStatus == weightSavePending {
 		weights, err := playbackWeights(views)
 		if err == nil {
@@ -155,6 +172,17 @@ func (a *App) playbackStart(w http.ResponseWriter, r *http.Request) {
 	} else if !page.Complete {
 		page.Current = &slides[step]
 	}
+	if page.Complete && !page.Summary {
+		page.NoteIndex = len(views) - 1
+	} else if !page.Complete && slides[step].Kind == "rest" {
+		previous := slides[step-1]
+		if previous.SetNumber == previous.Exercise.Sets {
+			page.NoteIndex = previous.Exercise.Index
+		}
+	}
+	if page.NoteIndex >= 0 {
+		page.NoteExercise = &views[page.NoteIndex]
+	}
 	a.render(w, "playback.html", page)
 }
 
@@ -165,7 +193,7 @@ func playbackExerciseViews(exercises []PlaybackExercise) []playbackExerciseView 
 		if exercise.Weight != nil {
 			weight = strconv.FormatFloat(*exercise.Weight, 'f', -1, 64)
 		}
-		views[index] = playbackExerciseView{PlaybackExercise: exercise, Weight: weight}
+		views[index] = playbackExerciseView{PlaybackExercise: exercise, Weight: weight, Index: index}
 	}
 	return views
 }

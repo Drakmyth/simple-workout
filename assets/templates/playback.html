@@ -10,13 +10,15 @@
 </head>
 <body class="playback-body">
   <main class="playback" data-playback {{if and .KeepScreenOn (not .Complete)}}data-keep-screen-on{{end}}>
-    {{if .Complete}}<section class="playback-slide completion-slide">{{template "playback-complete" .}}</section>
+    {{if .Summary}}{{template "playback-summary" .}}
+    {{else if .Complete}}<section class="playback-slide completion-slide">{{template "playback-complete" .}}</section>
     {{else}}<section class="playback-slide" data-kind="{{.Current.Kind}}">{{template "playback-slide" .Current}}</section>{{end}}
+    {{if .NoteExercise}}<section class="card performance-note"><label for="performance-note">How did that exercise feel? <span>({{.NoteExercise.Name}}, optional)</span></label><textarea id="performance-note" name="note_{{.NoteIndex}}" form="playback-action" rows="4" maxlength="4000">{{.NoteExercise.Note}}</textarea></section>{{end}}
   </main>
-  {{if not .Complete}}<form class="playback-action" data-playback-action method="post" action="/workouts/{{.Workout.ID}}/play">
+  {{if not .Summary}}<form id="playback-action" class="playback-action" data-playback-action method="post" action="/workouts/{{.Workout.ID}}/play">
     {{if .KeepScreenOn}}<input type="hidden" name="keep_screen_on" value="true">{{end}}
-    <input type="hidden" name="step" value="{{.NextStep}}"><input type="hidden" name="rest_seconds" value="{{.RestSeconds}}"><input type="hidden" name="image_preference" value="{{.ImagePreference}}">{{if eq .WeightSaveStatus "pending"}}<input type="hidden" name="save_weights" value="true">{{end}}
-    {{range .Exercises}}<input type="hidden" name="weight" value="{{.Weight}}"><input type="hidden" name="variant" value="{{.Variant}}">{{end}}<button type="submit">Next</button>
+    <input type="hidden" name="step" value="{{.NextStep}}"><input type="hidden" name="rest_seconds" value="{{.RestSeconds}}"><input type="hidden" name="image_preference" value="{{.ImagePreference}}">{{if ne .WeightSaveStatus "none"}}<input type="hidden" name="save_weights" value="true">{{end}}
+    {{range .Exercises}}{{if ne .Index $.NoteIndex}}<input type="hidden" name="note_{{.Index}}" value="{{.Note}}">{{end}}<input type="hidden" name="weight" value="{{.Weight}}"><input type="hidden" name="variant" value="{{.Variant}}">{{end}}<button type="submit">{{if .Complete}}View summary{{else}}Next{{end}}</button>
   </form>{{end}}
 </body>
 </html>{{end}}
@@ -28,4 +30,10 @@
   <section class="card playback-guidance"><h2>Steps</h2><ol>{{range .Exercise.Steps}}<li>{{.}}</li>{{end}}</ol><h2>Keep in mind</h2><p>{{.Exercise.Notes}}</p></section>
 {{else}}<p class="playback-progress">{{.CompletedSets}} of {{.TotalSets}} sets complete</p><p class="eyebrow">Recover</p><h1>Rest</h1><p class="rest-duration" data-rest-timer data-rest-seconds="{{.RestSeconds}}" role="timer">{{.RestSeconds}} seconds</p><h2>Up next: {{.Exercise.Name}}</h2><p class="set-target">Set {{.SetNumber}} of {{.Exercise.Sets}} · {{.Exercise.Reps}} reps · {{if .Exercise.Weight}}{{.Exercise.Weight}} {{.Unit}}{{else}}Bodyweight{{end}}</p>{{end}}{{end}}
 
-{{define "playback-complete"}}<p class="eyebrow">Workout complete</p><h1>Well done.</h1><p>You completed {{.Workout.Name}}.</p>{{if eq .WeightSaveStatus "done"}}<p>Working weights saved.</p>{{end}}<a class="primary-action" href="/workouts">Back to workouts</a>{{end}}
+{{define "playback-complete"}}<p class="eyebrow">Workout complete</p><h1>Well done.</h1><p>You completed {{.Workout.Name}}.</p>{{if eq .WeightSaveStatus "done"}}<p>Working weights saved.</p>{{end}}{{end}}
+
+{{define "playback-summary"}}<p class="eyebrow">Workout summary</p><h1>{{.Workout.Name}}</h1><p>Workout targets used during playback.</p>{{range .Exercises}}<section class="card summary-exercise"><h2>{{.Name}}</h2><p>{{.Sets}} sets × {{.Reps}} reps · {{if .Weight}}{{.Weight}} {{$.Unit}}{{else}}Bodyweight{{end}}</p>{{if .Note}}<p class="performance-note-text">{{.Note}}</p>{{end}}</section>{{end}}<pre data-summary-text hidden>Workout: {{.Workout.Name}}{{range .Exercises}}
+
+{{.Name}}
+{{.Sets}} sets × {{.Reps}} reps · {{if .Weight}}{{.Weight}} {{$.Unit}}{{else}}Bodyweight{{end}}{{if .Note}}
+Notes: {{.Note}}{{end}}{{end}}</pre><button type="button" data-copy-summary hidden>Copy summary</button><p data-copy-status role="status"></p><a class="primary-action" href="/workouts">Back to workouts</a>{{end}}
