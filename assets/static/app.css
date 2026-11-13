@@ -296,6 +296,10 @@ button.danger { color: #8f1d25; background: #fff; border-color: #d8aeb1; }
 .playback-guidance ol { padding-left: 1.4rem; line-height: 1.55; }
 .playback-guidance p { margin-bottom: 0; color: #62666b; line-height: 1.55; }
 .playback-slide[data-kind="rest"], .completion-slide { padding-top: 20vh; text-align: center; }
+.performance-note, .summary-exercise { margin: 1.25rem 0; padding: 1.25rem; }
+.performance-note label { display: block; margin-bottom: 0.75rem; font-weight: 700; }
+.performance-note textarea { box-sizing: border-box; width: 100%; padding: 0.65rem; font: inherit; border: 1px solid #bfc3c7; border-radius: 0.45rem; resize: vertical; }
+.performance-note-text { white-space: pre-wrap; overflow-wrap: anywhere; }
 .rest-duration { color: #8f1d25; font-size: 2rem; font-weight: 750; }
 .playback-action { position: fixed; right: 0; bottom: 0; left: 0; padding: 0.75rem max(1rem, calc((100% - 48rem) / 2)) calc(0.75rem + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid #dfe1e3; }
 .playback-action button { width: 100%; padding: 0.9rem; }

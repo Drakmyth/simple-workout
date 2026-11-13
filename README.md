@@ -9,6 +9,7 @@ Simple Workout is a mobile-first progressive web app for defining and playing gu
 - Guided set and rest playback with optional JavaScript timers
 - Per-exercise male, female, alternating, or random playback images
 - Optional working-weight updates after workout completion
+- Optional exercise performance notes and a transient completion summary
 - Installable PWA that remains network-dependent
 
 ## Requirements
@@ -94,7 +95,7 @@ After a version change reaches `master`, run the **Package Release Publish** wor
 - The application is single-user and does not provide authentication; deploy it only on a trusted network or behind external access controls.
 - It must be hosted at the origin root and does not support a configurable URL base path.
 - The installed PWA requires a network connection.
-- Active workouts cannot be resumed after closing the page, and completed workouts are not recorded as history.
+- Active workouts cannot be resumed after closing the page. Performance notes and completion summaries are not stored as workout history.
 
 ## License
 
