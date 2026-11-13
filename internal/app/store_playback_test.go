@@ -32,14 +32,14 @@ func TestPlaybackSettings(t *testing.T) {
 	if settings.RestSeconds != 60 || settings.WeightUnit != "kg" || settings.ImagePreference != imageAlternating {
 		t.Fatalf("initial playback settings = %#v", settings)
 	}
-	if err := application.store.updatePlaybackSettings(45, imageRandom); err != nil {
+	if err := application.store.updatePlaybackSettings(45, imageRandom, true); err != nil {
 		t.Fatalf("updatePlaybackSettings() error = %v", err)
 	}
 	settings, err = application.store.playbackSettings()
 	if err != nil || settings.RestSeconds != 45 || settings.ImagePreference != imageRandom {
 		t.Fatalf("updated playback settings = (%#v, %v)", settings, err)
 	}
-	if err := application.store.updatePlaybackSettings(-1, imageMale); err == nil {
+	if err := application.store.updatePlaybackSettings(-1, imageMale, true); err == nil {
 		t.Fatal("updatePlaybackSettings(invalid) error = nil")
 	}
 }

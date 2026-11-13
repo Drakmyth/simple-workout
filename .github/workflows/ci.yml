@@ -97,6 +97,8 @@ jobs:
           cache: true
       - name: Test
         run: go test ./...
+      - name: Test playback enhancements
+        run: node --test tools/playback/*.test.cjs
       - name: Vet
         run: go vet ./...
       - name: Build

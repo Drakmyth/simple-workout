@@ -26,6 +26,7 @@
           <option value="alternating" {{if eq .Settings.ImagePreference "alternating"}}selected{{end}}>Alternating</option>
           <option value="random" {{if eq .Settings.ImagePreference "random"}}selected{{end}}>Random</option>
         </select></label>
+        <label class="checkbox-label"><input name="keep_screen_on" type="checkbox" value="true" {{if .Settings.KeepScreenOn}}checked{{end}}> Keep screen on</label>
         <label class="checkbox-label"><input name="save_weights" type="checkbox" value="true" checked> Save these weights after completing the workout</label>
       </section>
       <button class="start-workout" type="submit">Start workout</button>

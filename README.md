@@ -34,6 +34,12 @@ go vet ./...
 go build ./cmd/simple-workout
 ```
 
+Test progressive playback enhancements with Node.js (no dependencies required):
+
+```sh
+node --test tools/playback/*.test.cjs
+```
+
 ## Docker
 
 ### Source builds
