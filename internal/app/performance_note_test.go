@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"html"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -81,6 +82,31 @@ func TestPerformanceNotesRemainPerOccurrence(t *testing.T) {
 		if !strings.Contains(body.String(), want) {
 			t.Fatalf("duplicate summary missing %q", want)
 		}
+	}
+}
+
+func TestCopySummaryText(t *testing.T) {
+	app := newTestApp(t)
+	exercises := playbackExerciseViews([]PlaybackExercise{
+		{Name: "Curl", Sets: 2, Reps: 10},
+		{Name: "Squat", Sets: 3, Reps: 8},
+	})
+	exercises[1].Weight = "0"
+	exercises[1].Note = "Tough <but safe>\nGood finish"
+	var body bytes.Buffer
+	if err := app.templates.ExecuteTemplate(&body, "playback-summary", playbackPage{
+		Workout: PlaybackWorkout{Name: "Full body"}, Exercises: exercises, Unit: "lb",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	_, text, ok := strings.Cut(body.String(), `<pre data-summary-text hidden>`)
+	if !ok {
+		t.Fatal("missing clipboard text")
+	}
+	text, _, _ = strings.Cut(text, "</pre>")
+	want := "Workout: Full body\n\nCurl\n2 sets × 10 reps · Bodyweight\n\nSquat\n3 sets × 8 reps · 0 lb\nNotes: Tough <but safe>\nGood finish"
+	if got := html.UnescapeString(text); got != want {
+		t.Fatalf("clipboard text = %q, want %q", got, want)
 	}
 }
 

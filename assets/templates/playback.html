@@ -32,4 +32,8 @@
 
 {{define "playback-complete"}}<p class="eyebrow">Workout complete</p><h1>Well done.</h1><p>You completed {{.Workout.Name}}.</p>{{if eq .WeightSaveStatus "done"}}<p>Working weights saved.</p>{{end}}{{end}}
 
-{{define "playback-summary"}}<p class="eyebrow">Workout summary</p><h1>{{.Workout.Name}}</h1><p>Workout targets used during playback.</p>{{range .Exercises}}<section class="card summary-exercise"><h2>{{.Name}}</h2><p>{{.Sets}} sets × {{.Reps}} reps · {{if .Weight}}{{.Weight}} {{$.Unit}}{{else}}Bodyweight{{end}}</p>{{if .Note}}<p class="performance-note-text">{{.Note}}</p>{{end}}</section>{{end}}<a class="primary-action" href="/workouts">Back to workouts</a>{{end}}
+{{define "playback-summary"}}<p class="eyebrow">Workout summary</p><h1>{{.Workout.Name}}</h1><p>Workout targets used during playback.</p>{{range .Exercises}}<section class="card summary-exercise"><h2>{{.Name}}</h2><p>{{.Sets}} sets × {{.Reps}} reps · {{if .Weight}}{{.Weight}} {{$.Unit}}{{else}}Bodyweight{{end}}</p>{{if .Note}}<p class="performance-note-text">{{.Note}}</p>{{end}}</section>{{end}}<pre data-summary-text hidden>Workout: {{.Workout.Name}}{{range .Exercises}}
+
+{{.Name}}
+{{.Sets}} sets × {{.Reps}} reps · {{if .Weight}}{{.Weight}} {{$.Unit}}{{else}}Bodyweight{{end}}{{if .Note}}
+Notes: {{.Note}}{{end}}{{end}}</pre><button type="button" data-copy-summary hidden>Copy summary</button><p data-copy-status role="status"></p><a class="primary-action" href="/workouts">Back to workouts</a>{{end}}

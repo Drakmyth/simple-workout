@@ -11,6 +11,30 @@ document.querySelectorAll("[data-auto-submit]").forEach((form) => {
 
 const playback = document.querySelector("[data-playback]");
 if (playback) {
+  const copyButton = playback.querySelector("[data-copy-summary]");
+  if (copyButton && navigator.clipboard?.writeText) {
+    const summary = playback.querySelector("[data-summary-text]");
+    const status = playback.querySelector("[data-copy-status]");
+    let resetLabel;
+    copyButton.hidden = false;
+    copyButton.addEventListener("click", async () => {
+      clearTimeout(resetLabel);
+      copyButton.disabled = true;
+      status.textContent = "";
+      try {
+        await navigator.clipboard.writeText(summary.textContent);
+        copyButton.textContent = "Copied";
+        status.textContent = "Summary copied.";
+        resetLabel = setTimeout(() => { copyButton.textContent = "Copy summary"; }, 2000);
+      } catch {
+        copyButton.textContent = "Copy summary";
+        status.textContent = "Could not copy summary. Select and copy the text manually.";
+      } finally {
+        copyButton.disabled = false;
+      }
+    });
+  }
+
   if (playback.hasAttribute("data-keep-screen-on") && "wakeLock" in navigator) {
     let lock = null;
     let requesting = false;
