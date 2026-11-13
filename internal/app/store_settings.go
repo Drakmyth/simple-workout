@@ -4,18 +4,18 @@ import "fmt"
 
 func (s *Store) playbackSettings() (PlaybackSettings, error) {
 	var settings PlaybackSettings
-	if err := s.db.QueryRow(`SELECT rest_seconds, weight_unit, image_preference, keep_screen_on
-		FROM settings WHERE id = 1`).Scan(&settings.RestSeconds, &settings.WeightUnit, &settings.ImagePreference, &settings.KeepScreenOn); err != nil {
+	if err := s.db.QueryRow(`SELECT rest_seconds, weight_unit, image_preference, keep_screen_on, rest_sound
+		FROM settings WHERE id = 1`).Scan(&settings.RestSeconds, &settings.WeightUnit, &settings.ImagePreference, &settings.KeepScreenOn, &settings.RestSound); err != nil {
 		return PlaybackSettings{}, fmt.Errorf("query playback settings: %w", err)
 	}
 	return settings, nil
 }
 
-func (s *Store) updatePlaybackSettings(restSeconds int, imagePreference string, keepScreenOn bool) error {
+func (s *Store) updatePlaybackSettings(restSeconds int, imagePreference string, keepScreenOn, restSound bool) error {
 	if restSeconds < 0 || !validImagePreference(imagePreference) {
 		return fmt.Errorf("invalid playback settings")
 	}
-	if _, err := s.db.Exec(`UPDATE settings SET rest_seconds = ?, image_preference = ?, keep_screen_on = ? WHERE id = 1`, restSeconds, imagePreference, keepScreenOn); err != nil {
+	if _, err := s.db.Exec(`UPDATE settings SET rest_seconds = ?, image_preference = ?, keep_screen_on = ?, rest_sound = ? WHERE id = 1`, restSeconds, imagePreference, keepScreenOn, restSound); err != nil {
 		return fmt.Errorf("update playback settings: %w", err)
 	}
 	return nil

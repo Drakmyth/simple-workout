@@ -12,6 +12,8 @@
 *.jpeg binary
 *.webp binary
 *.ico binary
+*.wav binary
 
+assets/static/rest-chime.wav linguist-generated=true
 assets/static/icon-*.png linguist-generated=true
 assets/static/images/exercises/*.webp linguist-generated=true
