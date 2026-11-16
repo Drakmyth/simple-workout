@@ -70,6 +70,9 @@ func TestPlaybackAdvancesWithoutJavaScript(t *testing.T) {
 		!strings.Contains(body, `<button type="submit">Next</button>`) {
 		t.Fatal("server-driven playback did not render the accessible rest screen")
 	}
+	if strings.Contains(body, "rest-counting") || strings.Contains(body, "disabled") {
+		t.Fatal("rest action must remain normal and enabled without JavaScript")
+	}
 }
 
 func TestPlaybackCompletionSavesUnchangedWeights(t *testing.T) {

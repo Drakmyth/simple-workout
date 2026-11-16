@@ -101,11 +101,13 @@ if (playback) {
   if (display) {
     let remaining = Number(display.dataset.restSeconds);
     if (remaining > 0) {
+      playback.classList.add("rest-counting");
       const timer = setInterval(() => {
         remaining -= 1;
         display.textContent = `${remaining} ${remaining === 1 ? "second" : "seconds"}`;
         if (remaining <= 0) {
           clearInterval(timer);
+          playback.classList.remove("rest-counting");
           if (document.visibilityState === "visible") {
             playback.querySelector("[data-rest-sound]")?.play().catch(() => {});
           }
