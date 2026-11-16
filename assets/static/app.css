@@ -300,6 +300,7 @@ button.danger { color: #8f1d25; background: #fff; border-color: #d8aeb1; }
 .playback-guidance h2:not(:first-child) { margin-top: 1.25rem; }
 .playback-guidance ol { padding-left: 1.4rem; line-height: 1.55; }
 .playback-guidance p { margin-bottom: 0; color: #62666b; line-height: 1.55; }
+.exercise-card p, .note p, .playback-guidance > p { white-space: pre-line; }
 .playback-slide[data-kind="rest"], .completion-slide { padding-top: 20vh; text-align: center; }
 .performance-note, .summary-exercise { margin: 1.25rem 0; padding: 1.25rem; }
 .performance-note label { display: block; margin-bottom: 0.75rem; font-weight: 700; }
